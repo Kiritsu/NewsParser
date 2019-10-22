@@ -2,6 +2,49 @@
 
 namespace NewsParser.Services
 {
+    public sealed class ReportEntity
+    {
+        /// <summary>
+        ///     Auto-managed LiteDB id.
+        /// </summary>
+        public int Id { get; set; }
+
+        /// <summary>
+        ///     Community on which the report has been sent.
+        /// </summary>
+        public string Community { get; set; }
+
+        /// <summary>
+        ///     Server on which the report has been sent.
+        /// </summary>
+        public string Server { get; set; }
+
+        /// <summary>
+        ///     Channel on which the report has been sent.
+        /// </summary>
+        public string Channel { get; set; }
+
+        /// <summary>
+        ///     Player's nickname that is being reported.
+        /// </summary>
+        public string Nickname { get; set; }
+
+        /// <summary>
+        ///     Details given by the author of the request.
+        /// </summary>
+        public string Details { get; set; }
+
+        /// <summary>
+        ///     Author Nickname#Discriminator that created the request.
+        /// </summary>
+        public string ReportAuthor { get; set; }
+
+        /// <summary>
+        ///     Indicates whether the author of the request already gave more details.
+        /// </summary>
+        public bool DetailsGiven { get; set; }
+    }
+
     public sealed class RSSEntity
     {
         /// <summary>

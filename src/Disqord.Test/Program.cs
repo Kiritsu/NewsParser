@@ -8,6 +8,7 @@ using Disqord.Events;
 using Disqord.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using NewsParser.Services;
+using Qmmands;
 
 namespace NewsParser
 {
@@ -28,7 +29,12 @@ namespace NewsParser
                     .AddSingleton(bot)
                     .AddSingleton<NewsParserService>()
                     .AddSingleton<HttpClient>()
-                    .BuildServiceProvider()
+                    .BuildServiceProvider(),
+                CommandService = new CommandService(new CommandServiceConfiguration
+                {
+                    CooldownBucketKeyGenerator = GenerateBucketKey,
+                    IgnoresExtraArguments = true
+                })
             }))
             {
                 bot.Ready += Bot_Ready;
@@ -37,6 +43,35 @@ namespace NewsParser
 
                 await bot.RunAsync();
             }
+        }
+
+        private object GenerateBucketKey(object bucketType, CommandContext ctx)
+        {
+            var context = ctx as DiscordCommandContext;
+
+            if (bucketType is CooldownBucketType bucket)
+            {
+                var obj = "";
+
+                switch (bucket)
+                {
+                    case CooldownBucketType.Guild:
+                        obj += context.Guild?.Id ?? context.User.Id;
+                        break;
+                    case CooldownBucketType.Channel:
+                        obj += context.Channel.Id;
+                        break;
+                    case CooldownBucketType.User:
+                        obj += context.User.Id;
+                        break;
+                    default:
+                        throw new InvalidOperationException("Unknown bucket type.");
+                }
+
+                return obj;
+            }
+
+            throw new InvalidOperationException("Unknown bucket type.");
         }
 
         private async Task Bot_Ready(ReadyEventArgs e)
@@ -49,5 +84,12 @@ namespace NewsParser
         {
             Console.WriteLine(e);
         }
+    }
+
+    public enum CooldownBucketType
+    {
+        Guild,
+        Channel,
+        User
     }
 }
