@@ -39,7 +39,8 @@ namespace NewsParser.Modules
                     ["CHANNEL_KEY"] = "Next, I need the channel he is in.",
                     ["NICKNAME_KEY"] = "Please give me the nickname of the player you want to report.",
                     ["DETAILS_KEY"] = "Now, I will need further details. What have they done?",
-                    ["NEXT_KEY"] = "Thank you for your report. If you have anything else to give, please type: `{0}support {1} <your message>`."
+                    ["NEXT_KEY"] = "Thank you for your report. If you have anything else to give, please type: `{0}support {1} <your message>`.",
+                    ["CONFIRM_DETAILS_KEY"] = "These details have been sent, thank you."
                 },
                 [Lang.FR] = new Dictionary<string, string>
                 {
@@ -47,7 +48,8 @@ namespace NewsParser.Modules
                     ["CHANNEL_KEY"] = "Ok, maintenant, je vais avoir besoin de son canal.",
                     ["NICKNAME_KEY"] = "Il me faut le pseudo du joueur en question, maintenant.",
                     ["DETAILS_KEY"] = "À présent, je vais avoir besoin de plus de détails. Qu'est-ce-que le joueur en question a fait ?",
-                    ["NEXT_KEY"] = "Merci pour ton signalement. Si tu as des informations supplémentaires à donner, écris la commande suivante: `{0}support {1} <ton message>`."
+                    ["NEXT_KEY"] = "Merci pour ton signalement. Si tu as des informations supplémentaires à donner, écris la commande suivante: `{0}support {1} <ton message>`.",
+                    ["CONFIRM_DETAILS_KEY"] = "Ces détails ont été transmis, merci."
                 },
                 [Lang.ES] = new Dictionary<string, string>
                 {
@@ -55,7 +57,8 @@ namespace NewsParser.Modules
                     ["CHANNEL_KEY"] = "¿En qué canal se encuentra?",
                     ["NICKNAME_KEY"] = "Por favor, dime el nombre del jugador al que quieres reportar.",
                     ["DETAILS_KEY"] = "Finalmente, necesitaré algunos detalles. ¿Qué es lo que ha ocurrido?",
-                    ["NEXT_KEY"] = "Gracias por tu reporte. Si quieres señalar algo más, por favor escribe: `{0}support {1} <your message>`."
+                    ["NEXT_KEY"] = "Gracias por tu reporte. Si quieres señalar algo más, por favor escribe: `{0}support {1} <your message>`.",
+                    ["CONFIRM_DETAILS_KEYS"] = "La información ha sido enviada. ¡Gracias!"
                 },
                 [Lang.RU] = new Dictionary<string, string>
                 {
@@ -63,7 +66,8 @@ namespace NewsParser.Modules
                     ["CHANNEL_KEY"] = "Теперь уточните, на каком канале сейчас находятся игроки, о которых вы хотите сообщить (если это имеет значение).",
                     ["NICKNAME_KEY"] = "Напишите имена персонажей этих игроков.",
                     ["DETAILS_KEY"] = "Теперь напишите как можно более подробно о том, что именно нам нужно проверить. Что делают или сделали эти игроки?",
-                    ["NEXT_KEY"] = "Спасибо за ваше сообщение. Если вам есть, что добавить, используйте следующую команду: `{0}support id <текст>`."
+                    ["NEXT_KEY"] = "Спасибо за ваше сообщение. Если вам есть, что добавить, используйте следующую команду: `{0}support {1} <текст>`.",
+                    ["CONFIRM_DETAILS_KEY"] = "Дополнительная информация была добавлена, благодарим вас!"
                 },
                 [Lang.PL] = new Dictionary<string, string>
                 {
@@ -71,7 +75,8 @@ namespace NewsParser.Modules
                     ["CHANNEL_KEY"] = "Na którym kanale znajduje się zgłaszana postać?",
                     ["NICKNAME_KEY"] = "Podaj proszę nick postaci, którą chcesz zgłosić.",
                     ["DETAILS_KEY"] = "Opisz dokładnie czego dotyczy zgłoszenie.",
-                    ["NEXT_KEY"] = "Dziękujemy za zgłoszenie. Jeżeli chcesz poruszyć jeszcze jakąś sprawę użyj komendy: `{0}support {1} <Twoja wiadomość>`."
+                    ["NEXT_KEY"] = "Dziękujemy za zgłoszenie. Jeżeli chcesz poruszyć jeszcze jakąś sprawę użyj komendy: `{0}support {1} <Twoja wiadomość>`.",
+                    ["CONFIRM_DETAILS_KEYS"] = "Informacje zostały wysłane, dziękujemy."
                 },
             };
         }
@@ -99,7 +104,6 @@ namespace NewsParser.Modules
 
             if (report.DetailsGiven)
             {
-                await ReplyAsync("You have already given details for this support.");
                 return;
             }
 
@@ -119,7 +123,10 @@ namespace NewsParser.Modules
 
             await (supportChannel as ITextChannel).SendMessageAsync(embed: embed.Build());
 
-            await ReplyAsync("These details have been sent, thank you.");
+            var lang = Lang.EN;
+            Enum.TryParse(report.Community, true, out lang);
+
+            await ReplyAsync(LangStrings[lang]["CONFIRM_DETAILS_KEY"]);
         }
 
         [Command("Support")]
