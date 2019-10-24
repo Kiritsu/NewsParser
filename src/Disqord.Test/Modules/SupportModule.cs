@@ -78,6 +78,33 @@ namespace NewsParser.Modules
                     ["NEXT_KEY"] = "Dziękujemy za zgłoszenie. Jeżeli chcesz poruszyć jeszcze jakąś sprawę użyj komendy: `{0}support {1} <Twoja wiadomość>`.",
                     ["CONFIRM_DETAILS_KEYS"] = "Informacje zostały wysłane, dziękujemy."
                 },
+                [Lang.IT] = new Dictionary<string, string>
+                {
+                    ["SERVER_KEY"] = "Ok. Adesso ho bisogno di sapere il server del personaggio che vuoi segnalare.",
+                    ["CHANNEL_KEY"] = "Ora il canale in cui si trova.",
+                    ["NICKNAME_KEY"] = "Per piacere dimmi il nickname del personaggio che vuoi segnalare.",
+                    ["DETAILS_KEY"] = "Ho bisogno di qualche dettaglio in più, cosa ha fatto il personaggio in questione?",
+                    ["NEXT_KEY"] = "Grazie per la segnalazione. Se hai altro da aggiungere, scrivi: `{0}support {1} <tuo_messaggio>`.",
+                    ["CONFIRM_DETAILS_KEY"] = "La segnalazione è stata inviata, grazie."
+                },
+                [Lang.DE] = new Dictionary<string, string>
+                {
+                    ["SERVER_KEY"] = "Alles klar. Nun brauche ich den Server auf dem sich der Spieler befindet, den du melden möchtest.",
+                    ["CHANNEL_KEY"] = "In welchem Channel befindet sich dieser Spieler?",
+                    ["NICKNAME_KEY"] = "Wie lautet der Charaktername des Spielers, den du melden möchtest?",
+                    ["DETAILS_KEY"] = "Jetzt brauche ich die Details. Was genau ist passiert?",
+                    ["NEXT_KEY"] = "Danke für deine Meldung. Wenn du noch weitere Informationen hinzufügen möchtest, tu dies mit folgendem Text: `{0}support {1} <deine Nachricht>`.",
+                    ["CONFIRM_DETAILS_KEY"] = "Deine Informationen wurden versendet, vielen Dank."
+                },
+                [Lang.TR] = new Dictionary<string, string>
+                {
+                    ["SERVER_KEY"] = "Peki. Şimdi sunucuda rapor etmek istediğiniz oyuncunun nickine ihtiyacım olacak..",
+                    ["CHANNEL_KEY"] = "Sonra, içinde bulunduğu kanala ihtiyacım var..",
+                    ["NICKNAME_KEY"] = "Lütfen bana bildirmek istediğiniz oyuncunun takma adını (nickini) verin.",
+                    ["DETAILS_KEY"] = "Şimdi daha fazla ayrıntıya ihtiyacım olacak. Ne yaptılar?",
+                    ["NEXT_KEY"] = "Raporun için teşekkürler.Söyleyeceğin başka bir şey varsa, lütfen yazın: `{0}support {1} <your message>`.",
+                    ["CONFIRM_DETAILS_KEY"] = "Bu detaylar gönderildi, teşekkür ederim.."
+                },
             };
         }
 

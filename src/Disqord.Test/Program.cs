@@ -21,7 +21,7 @@ namespace NewsParser
 
         private async Task MainAsync()
         {
-            var token = Environment.GetEnvironmentVariable("NOT_QUAHU", EnvironmentVariableTarget.User);
+            var token = Environment.GetEnvironmentVariable("NOT_QUAHU");
             using (var bot = new DiscordBot(TokenType.Bot, token, new DiscordBotConfiguration
             {
                 Prefixes = new[] { "k!" },
