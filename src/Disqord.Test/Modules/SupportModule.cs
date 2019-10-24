@@ -137,7 +137,7 @@ namespace NewsParser.Modules
             report.DetailsGiven = true;
             reportEntities.Update(report);
 
-            var supportChannel = Context.Bot.GetChannel(628612229842862090);
+            var supportChannel = Context.Bot.GetChannel(636984863525830686);
             var embed = new EmbedBuilder()
                 .WithColor(Color.DarkOrange)
                 .WithTitle($"Support request in community **{report.Community}** (ID#{report.Id}) has been updated")
@@ -266,7 +266,7 @@ namespace NewsParser.Modules
 
             await Context.User.SendMessageAsync(string.Format(language["NEXT_KEY"], Context.Prefix, report.Id));
 
-            var supportChannel = Context.Bot.GetChannel(628612229842862090);
+            var supportChannel = Context.Bot.GetChannel(636984863525830686);
             var embed = new EmbedBuilder()
                 .WithColor(Color.DarkBlue)
                 .WithTitle($"Support request in community **{report.Community}** (ID#{report.Id})")
