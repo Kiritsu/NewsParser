@@ -38,11 +38,79 @@ namespace NewsParser
             }))
             {
                 bot.Ready += Bot_Ready;
+                bot.MessageDeleted += Bot_MessageDeleted;
+                bot.MessageUpdated += Bot_MessageUpdated;
                 bot.Logger.MessageLogged += Logger_MessageLogged;
                 bot.AddModules(Assembly.GetExecutingAssembly());
 
                 await bot.RunAsync();
             }
+        }
+
+        private async Task Bot_MessageUpdated(MessageUpdatedEventArgs e)
+        {
+            if (!(e.Channel is IGuildChannel gc))
+            {
+                return;
+            }
+
+            if (gc.GuildId != 628543142819528714)
+            {
+                return;
+            }
+
+            if (e.NewMessage.Author.IsBot)
+            {
+                return;
+            }
+
+            var embed = new EmbedBuilder()
+             .WithColor(Color.DarkRed)
+             .WithTitle("Message Updated")
+             .AddField("Author", $"{e.NewMessage.Author.Name}#{e.NewMessage.Author.Discriminator}", true)
+             .AddField("Date", $"{e.NewMessage.Timestamp:G}", true)
+             .AddField("Channel", $"{(e.Channel as IMentionable).Mention}", true)
+             .AddField("Old Content", $"{(e.OldMessage.HasValue ? e.OldMessage.Value.Content : "**Unknown Message**")}")
+             .AddField("New Content", $"{e.NewMessage.Content}")
+             .Build();
+
+            var tc = e.Client.GetChannel(636992310265118752) as ITextChannel;
+            await tc.SendMessageAsync(embed: embed);
+        }
+
+        private async Task Bot_MessageDeleted(MessageDeletedEventArgs e)
+        {
+            if (!(e.Channel is IGuildChannel gc))
+            {
+                return;
+            }
+
+            if (gc.GuildId != 628543142819528714)
+            {
+                return;
+            }
+
+            if (!e.Message.HasValue)
+            {
+                return;
+            }
+
+            if (e.Message.Value.Author.IsBot)
+            {
+                return;
+            }
+
+            var embed = new EmbedBuilder()
+                .WithColor(Color.DarkRed)
+                .WithTitle("Message Deleted")
+                .AddField("Author", $"{e.Message.Value.Author.Name}#{e.Message.Value.Author.Discriminator}", true)
+                .AddField("Date", $"{e.Message.Value.Timestamp:G}", true)
+                .AddField("Channel", $"{(e.Channel as IMentionable).Mention}", true)
+                .AddField("Content", $"{e.Message.Value.Content}")
+                .Build();
+
+            var tc = e.Client.GetChannel(636992310265118752) as ITextChannel;
+            await tc.SendMessageAsync(embed: embed);
         }
 
         private object GenerateBucketKey(object bucketType, CommandContext ctx)
