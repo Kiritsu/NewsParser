@@ -18,7 +18,7 @@ namespace Disqord.Rest
                 var model = await ApiClient.GetChannelAsync(channelId, options).ConfigureAwait(false);
                 return RestChannel.Create(this, model);
             }
-            catch (HttpDiscordException ex) when (ex.HttpStatusCode == HttpStatusCode.NotFound)
+            catch (DiscordHttpException ex) when (ex.HttpStatusCode == HttpStatusCode.NotFound)
             {
                 return null;
             }
@@ -31,7 +31,7 @@ namespace Disqord.Rest
                 var model = await ApiClient.GetChannelAsync(channelId, options).ConfigureAwait(false);
                 return (T) RestChannel.Create(this, model);
             }
-            catch (HttpDiscordException ex) when (ex.HttpStatusCode == HttpStatusCode.NotFound)
+            catch (DiscordHttpException ex) when (ex.HttpStatusCode == HttpStatusCode.NotFound)
             {
                 return null;
             }
@@ -145,7 +145,7 @@ namespace Disqord.Rest
                 var model = await ApiClient.GetChannelMessageAsync(channelId, messageId, options).ConfigureAwait(false);
                 return RestMessage.Create(this, model);
             }
-            catch (HttpDiscordException ex) when (ex.HttpStatusCode == HttpStatusCode.NotFound && ex.JsonErrorCode == JsonErrorCode.UnknownMessage)
+            catch (DiscordHttpException ex) when (ex.HttpStatusCode == HttpStatusCode.NotFound && ex.JsonErrorCode == JsonErrorCode.UnknownMessage)
             {
                 return null;
             }
@@ -274,15 +274,20 @@ namespace Disqord.Rest
         public Task RemoveAllReactionsAsync(Snowflake channelId, Snowflake messageId, RestRequestOptions options = null)
             => ApiClient.DeleteAllReactionsAsync(channelId, messageId, options);
 
-        public async Task<RestMessage> ModifyMessageAsync(Snowflake channelId, Snowflake messageId, Action<ModifyMessageProperties> action, RestRequestOptions options = null)
+        public async Task<RestUserMessage> ModifyMessageAsync(Snowflake channelId, Snowflake messageId, Action<ModifyMessageProperties> action, RestRequestOptions options = null)
+        {
+            var model = await InternalModifyMessageAsync(channelId, messageId, action, options).ConfigureAwait(false);
+            return new RestUserMessage(this, model);
+        }
+
+        internal async Task<MessageModel> InternalModifyMessageAsync(Snowflake channelId, Snowflake messageId, Action<ModifyMessageProperties> action, RestRequestOptions options)
         {
             if (action == null)
                 throw new ArgumentNullException(nameof(action));
 
             var properties = new ModifyMessageProperties();
             action(properties);
-            var model = await ApiClient.EditMessageAsync(channelId, messageId, properties, options).ConfigureAwait(false);
-            return RestMessage.Create(this, model);
+            return await ApiClient.EditMessageAsync(channelId, messageId, properties, options).ConfigureAwait(false);
         }
 
         public Task DeleteMessageAsync(Snowflake channelId, Snowflake messageId, RestRequestOptions options = null)
