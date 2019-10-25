@@ -95,7 +95,7 @@ namespace NewsParser.Services
                 var topicEntities = db.GetCollection<TopicEntity>("topics");
                 topicEntities.EnsureIndex(x => x.Id);
 
-                if (topicEntities.FindAll().ToList().Any(x => x.Name == topic.Name))
+                if (topicEntities.FindAll().ToList().Any(x => x.Name == topic.Name && x.CreatedAt == topic.CreatedAt))
                 {
                     return;
                 }
