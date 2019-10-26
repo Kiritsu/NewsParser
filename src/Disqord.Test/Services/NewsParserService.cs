@@ -51,67 +51,74 @@ namespace NewsParser.Services
         {
             _intervals.Add(entity.Id, Observable.Interval(TimeSpan.FromMinutes(1)).Subscribe(async _ =>
             {
-                var channel = _bot.GetChannel(entity.ChannelId);
-
-                var xmlFile = await _http.GetStringAsync(entity.RSSUrl);
-
-                var doc = new XmlDocument();
-                doc.LoadXml(xmlFile);
-
-                var topics = doc.GetElementsByTagName("item");
-                if (topics.Count == 0)
+                try
                 {
-                    return;
-                }
+                    var channel = _bot.GetChannel(entity.ChannelId);
 
-                var latest = topics[0];
-                var childs = latest.ChildNodes;
-                var topic = new TopicEntity
-                {
-                    RSSEntityId = entity.Id
-                };
+                    var xmlFile = await _http.GetStringAsync(entity.RSSUrl);
 
-                foreach (XmlElement child in childs)
-                {
-                    switch (child.Name)
+                    var doc = new XmlDocument();
+                    doc.LoadXml(xmlFile);
+
+                    var topics = doc.GetElementsByTagName("item");
+                    if (topics.Count == 0)
                     {
-                        case "title":
-                            topic.Name = child.InnerText;
-                            break;
-                        case "link":
-                            topic.Url = child.InnerText;
-                            break;
-                        case "dc:creator":
-                            topic.Author = child.InnerText;
-                            break;
-                        case "pubDate":
-                            topic.CreatedAt = child.InnerText;
-                            break;
+                        return;
                     }
+
+                    var latest = topics[0];
+                    var childs = latest.ChildNodes;
+                    var topic = new TopicEntity
+                    {
+                        RSSEntityId = entity.Id
+                    };
+
+                    foreach (XmlElement child in childs)
+                    {
+                        switch (child.Name)
+                        {
+                            case "title":
+                                topic.Name = child.InnerText;
+                                break;
+                            case "link":
+                                topic.Url = child.InnerText;
+                                break;
+                            case "dc:creator":
+                                topic.Author = child.InnerText;
+                                break;
+                            case "pubDate":
+                                topic.CreatedAt = child.InnerText;
+                                break;
+                        }
+                    }
+
+                    using var db = new LiteDatabase("news_parser.db");
+
+                    var topicEntities = db.GetCollection<TopicEntity>("topics");
+                    topicEntities.EnsureIndex(x => x.Id);
+
+                    if (topicEntities.FindAll().ToList().Any(x => x.Name == topic.Name && x.CreatedAt == topic.CreatedAt))
+                    {
+                        return;
+                    }
+
+                    topicEntities.Insert(topic);
+
+                    await (channel as ITextChannel).SendMessageAsync(
+                        embed: new EmbedBuilder()
+                            .WithAuthor(new EmbedAuthorBuilder()
+                                            .WithName(topic.Name)
+                                            .WithUrl(topic.Url))
+                            .WithColor(Color.Aqua)
+                            .WithDescription($"A new thread has been created by `{topic.Author}`." +
+                                             $"\n\n[Click here]({topic.Url}) to see the entire thread.")
+                            .WithFooter($"Created on {topic.CreatedAt}")
+                            .Build());
                 }
-
-                using var db = new LiteDatabase("news_parser.db");
-
-                var topicEntities = db.GetCollection<TopicEntity>("topics");
-                topicEntities.EnsureIndex(x => x.Id);
-
-                if (topicEntities.FindAll().ToList().Any(x => x.Name == topic.Name && x.CreatedAt == topic.CreatedAt))
+                catch (Exception e)
                 {
-                    return;
+                    Console.WriteLine("Parser br0ke but nvm lets retry");
                 }
-
-                topicEntities.Insert(topic);
-
-                await (channel as ITextChannel).SendMessageAsync(
-                    embed: new EmbedBuilder()
-                        .WithAuthor(new EmbedAuthorBuilder()
-                                        .WithName(topic.Name)
-                                        .WithUrl(topic.Url))
-                        .WithColor(Color.Aqua)
-                        .WithDescription($"A new thread has been created by `{topic.Author}`." +
-                                         $"\n\n[Click here]({topic.Url}) to see the entire thread.")
-                        .WithFooter($"Created on {topic.CreatedAt}")
-                        .Build());
             }));
         }
     }
