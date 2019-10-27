@@ -148,7 +148,7 @@ namespace NewsParser.Modules
                 .AddField("Details", report.Details)
                 .AddField("Few more details", details);
 
-            await (supportChannel as ITextChannel).SendMessageAsync(embed: embed.Build());
+            await (supportChannel as CachedTextChannel).SendMessageAsync(embed: embed.Build());
 
             var lang = Lang.EN;
             Enum.TryParse(report.Community, true, out lang);
@@ -276,7 +276,7 @@ namespace NewsParser.Modules
                 .AddField("Username", report.Nickname, true)
                 .AddField("Details", report.Details);
 
-            await (supportChannel as ITextChannel).SendMessageAsync(embed: embed.Build());
+            await (supportChannel as CachedTextChannel).SendMessageAsync(embed: embed.Build());
         }
 
         public async Task<CachedMessage> NextMessageAsync(CachedUser user, CachedChannel channel)

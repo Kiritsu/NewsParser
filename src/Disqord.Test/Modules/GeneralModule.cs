@@ -38,7 +38,7 @@ namespace NewsParser
             var rssEntities = db.GetCollection<RSSEntity>("rsss");
             rssEntities.EnsureIndex(x => x.Id);
 
-            if (!(channel is ITextChannel))
+            if (!(channel is CachedTextChannel))
             {
                 await ReplyAsync($"The given channel `{channel.Name}` is not a text channel.");
                 return;

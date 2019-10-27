@@ -49,12 +49,12 @@ namespace NewsParser
 
         private async Task Bot_MessageUpdated(MessageUpdatedEventArgs e)
         {
-            if (!(e.Channel is IGuildChannel gc))
+            if (!(e.Channel is CachedTextChannel gc))
             {
                 return;
             }
 
-            if (gc.GuildId != 628543142819528714)
+            if (gc.Guild.Id != 628543142819528714)
             {
                 return;
             }
@@ -74,18 +74,18 @@ namespace NewsParser
              .AddField("New Content", $"{e.NewMessage.Content}")
              .Build();
 
-            var tc = e.Client.GetChannel(636992310265118752) as ITextChannel;
+            var tc = e.Client.GetChannel(636992310265118752) as CachedTextChannel;
             await tc.SendMessageAsync(embed: embed);
         }
 
         private async Task Bot_MessageDeleted(MessageDeletedEventArgs e)
         {
-            if (!(e.Channel is IGuildChannel gc))
+            if (!(e.Channel is CachedTextChannel gc))
             {
                 return;
             }
 
-            if (gc.GuildId != 628543142819528714)
+            if (gc.Guild.Id != 628543142819528714)
             {
                 return;
             }
@@ -109,7 +109,7 @@ namespace NewsParser
                 .AddField("Content", $"{e.Message.Value.Content}")
                 .Build();
 
-            var tc = e.Client.GetChannel(636992310265118752) as ITextChannel;
+            var tc = e.Client.GetChannel(636992310265118752) as CachedTextChannel;
             await tc.SendMessageAsync(embed: embed);
         }
 

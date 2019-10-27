@@ -10,7 +10,7 @@ namespace NewsParser.Attributes
         public override ValueTask<CheckResult> CheckAsync(CommandContext _)
         {
             var context = _ as DiscordCommandContext;
-            return context.Guild == null && context.Channel is IDmChannel
+            return context.Guild == null && context.Channel is CachedDmChannel
                 ? CheckResult.Successful
                 : CheckResult.Unsuccessful("This must be executed in a guild.");
         }
