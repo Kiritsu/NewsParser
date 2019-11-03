@@ -28,9 +28,23 @@ namespace NewsParser.Modules
     public sealed class SupportModule : DiscordModuleBase
     {
         private static Dictionary<Lang, Dictionary<string, string>> LangStrings;
+        private static Dictionary<Lang, ulong> LangChannels;
 
         static SupportModule()
         {
+            LangChannels = new Dictionary<Lang, ulong>
+            {
+                [Lang.EN] = 636984863525830686,
+                [Lang.CZ] = 636984863525830686,
+                [Lang.DE] = 636984863525830686,
+                [Lang.ES] = 636984863525830686,
+                [Lang.IT] = 636984863525830686,
+                [Lang.PL] = 636984863525830686,
+                [Lang.RU] = 636984863525830686,
+                [Lang.TR] = 636984863525830686,
+                [Lang.FR] = 640630987696635927
+            };
+
             LangStrings = new Dictionary<Lang, Dictionary<string, string>>
             {
                 [Lang.EN] = new Dictionary<string, string>
@@ -137,7 +151,10 @@ namespace NewsParser.Modules
             report.DetailsGiven = true;
             reportEntities.Update(report);
 
-            var supportChannel = Context.Bot.GetChannel(636984863525830686);
+            var lang = Lang.EN;
+            Enum.TryParse(report.Community, true, out lang);
+
+            var supportChannel = Context.Bot.GetChannel(LangChannels[lang]);
             var embed = new EmbedBuilder()
                 .WithColor(Color.DarkOrange)
                 .WithTitle($"Support request in community **{report.Community}** (ID#{report.Id}) has been updated")
@@ -149,9 +166,6 @@ namespace NewsParser.Modules
                 .AddField("Few more details", details);
 
             await (supportChannel as CachedTextChannel).SendMessageAsync(embed: embed.Build());
-
-            var lang = Lang.EN;
-            Enum.TryParse(report.Community, true, out lang);
 
             await ReplyAsync(LangStrings[lang]["CONFIRM_DETAILS_KEY"]);
         }
@@ -266,7 +280,7 @@ namespace NewsParser.Modules
 
             await Context.User.SendMessageAsync(string.Format(language["NEXT_KEY"], Context.Prefix, report.Id));
 
-            var supportChannel = Context.Bot.GetChannel(636984863525830686);
+            var supportChannel = Context.Bot.GetChannel(LangChannels[lang]);
             var embed = new EmbedBuilder()
                 .WithColor(Color.DarkBlue)
                 .WithTitle($"Support request in community **{report.Community}** (ID#{report.Id})")

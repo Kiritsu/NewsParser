@@ -100,6 +100,7 @@ namespace NewsParser
             foreach (var group in rssEntities.FindAll().GroupBy(x => x.ChannelId))
             {
                 var channel = Context.Bot.GetChannel(group.Key);
+
                 if (channel is null)
                 {
                     rssEntities.Delete(x => x.ChannelId == group.Key);
