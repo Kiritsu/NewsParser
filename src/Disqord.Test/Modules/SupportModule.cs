@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Disqord;
@@ -54,7 +54,8 @@ namespace NewsParser.Modules
                     ["NICKNAME_KEY"] = "Please give me the nickname of the player you want to report.",
                     ["DETAILS_KEY"] = "Now, I will need further details. What have they done?",
                     ["NEXT_KEY"] = "Thank you for your report. If you have anything else to give, please type: `{0}support {1} <your message>`.",
-                    ["CONFIRM_DETAILS_KEY"] = "These details have been sent, thank you."
+                    ["CONFIRM_DETAILS_KEY"] = "These details have been sent, thank you.",
+                    ["HERE"] = "!"
                 },
                 [Lang.FR] = new Dictionary<string, string>
                 {
@@ -62,8 +63,9 @@ namespace NewsParser.Modules
                     ["CHANNEL_KEY"] = "Ok, maintenant, je vais avoir besoin de son canal.",
                     ["NICKNAME_KEY"] = "Il me faut le pseudo du joueur en question, maintenant.",
                     ["DETAILS_KEY"] = "À présent, je vais avoir besoin de plus de détails. Qu'est-ce-que le joueur en question a fait ?",
-                    ["NEXT_KEY"] = "Merci pour ton signalement. Si tu as des informations supplémentaires à donner, écris la commande suivante: `{0}support {1} <ton message>`.",
-                    ["CONFIRM_DETAILS_KEY"] = "Ces détails ont été transmis, merci."
+                    ["NEXT_KEY"] = "Merci pour votre signalement. Si vous avez des informations supplémentaires à donner, écrivez la commande suivante: `{0}support {1} <votre message>`.",
+                    ["CONFIRM_DETAILS_KEY"] = "Ces détails ont été transmis, merci.",
+                    ["HERE"] = "@here"
                 },
                 [Lang.ES] = new Dictionary<string, string>
                 {
@@ -72,7 +74,8 @@ namespace NewsParser.Modules
                     ["NICKNAME_KEY"] = "Por favor, dime el nombre del jugador al que quieres reportar.",
                     ["DETAILS_KEY"] = "Finalmente, necesitaré algunos detalles. ¿Qué es lo que ha ocurrido?",
                     ["NEXT_KEY"] = "Gracias por tu reporte. Si quieres señalar algo más, por favor escribe: `{0}support {1} <your message>`.",
-                    ["CONFIRM_DETAILS_KEYS"] = "La información ha sido enviada. ¡Gracias!"
+                    ["CONFIRM_DETAILS_KEYS"] = "La información ha sido enviada. ¡Gracias!",
+                    ["HERE"] = "!"
                 },
                 [Lang.RU] = new Dictionary<string, string>
                 {
@@ -81,7 +84,8 @@ namespace NewsParser.Modules
                     ["NICKNAME_KEY"] = "Напишите имена персонажей этих игроков.",
                     ["DETAILS_KEY"] = "Теперь напишите как можно более подробно о том, что именно нам нужно проверить. Что делают или сделали эти игроки?",
                     ["NEXT_KEY"] = "Спасибо за ваше сообщение. Если вам есть, что добавить, используйте следующую команду: `{0}support {1} <текст>`.",
-                    ["CONFIRM_DETAILS_KEY"] = "Дополнительная информация была добавлена, благодарим вас!"
+                    ["CONFIRM_DETAILS_KEY"] = "Дополнительная информация была добавлена, благодарим вас!",
+                    ["HERE"] = "!"
                 },
                 [Lang.PL] = new Dictionary<string, string>
                 {
@@ -90,7 +94,8 @@ namespace NewsParser.Modules
                     ["NICKNAME_KEY"] = "Podaj proszę nick postaci, którą chcesz zgłosić.",
                     ["DETAILS_KEY"] = "Opisz dokładnie czego dotyczy zgłoszenie.",
                     ["NEXT_KEY"] = "Dziękujemy za zgłoszenie. Jeżeli chcesz poruszyć jeszcze jakąś sprawę użyj komendy: `{0}support {1} <Twoja wiadomość>`.",
-                    ["CONFIRM_DETAILS_KEYS"] = "Informacje zostały wysłane, dziękujemy."
+                    ["CONFIRM_DETAILS_KEYS"] = "Informacje zostały wysłane, dziękujemy.",
+                    ["HERE"] = "!"
                 },
                 [Lang.IT] = new Dictionary<string, string>
                 {
@@ -99,7 +104,8 @@ namespace NewsParser.Modules
                     ["NICKNAME_KEY"] = "Per piacere dimmi il nickname del personaggio che vuoi segnalare.",
                     ["DETAILS_KEY"] = "Ho bisogno di qualche dettaglio in più, cosa ha fatto il personaggio in questione?",
                     ["NEXT_KEY"] = "Grazie per la segnalazione. Se hai altro da aggiungere, scrivi: `{0}support {1} <tuo_messaggio>`.",
-                    ["CONFIRM_DETAILS_KEY"] = "La segnalazione è stata inviata, grazie."
+                    ["CONFIRM_DETAILS_KEY"] = "La segnalazione è stata inviata, grazie.",
+                    ["HERE"] = "!"
                 },
                 [Lang.DE] = new Dictionary<string, string>
                 {
@@ -108,7 +114,8 @@ namespace NewsParser.Modules
                     ["NICKNAME_KEY"] = "Wie lautet der Charaktername des Spielers, den du melden möchtest?",
                     ["DETAILS_KEY"] = "Jetzt brauche ich die Details. Was genau ist passiert?",
                     ["NEXT_KEY"] = "Danke für deine Meldung. Wenn du noch weitere Informationen hinzufügen möchtest, tu dies mit folgendem Text: `{0}support {1} <deine Nachricht>`.",
-                    ["CONFIRM_DETAILS_KEY"] = "Deine Informationen wurden versendet, vielen Dank."
+                    ["CONFIRM_DETAILS_KEY"] = "Deine Informationen wurden versendet, vielen Dank.",
+                    ["HERE"] = "!"
                 },
                 [Lang.TR] = new Dictionary<string, string>
                 {
@@ -117,7 +124,8 @@ namespace NewsParser.Modules
                     ["NICKNAME_KEY"] = "Lütfen bana bildirmek istediğiniz oyuncunun takma adını (nickini) verin.",
                     ["DETAILS_KEY"] = "Şimdi daha fazla ayrıntıya ihtiyacım olacak. Ne yaptılar?",
                     ["NEXT_KEY"] = "Raporun için teşekkürler.Söyleyeceğin başka bir şey varsa, lütfen yazın: `{0}support {1} <your message>`.",
-                    ["CONFIRM_DETAILS_KEY"] = "Bu detaylar gönderildi, teşekkür ederim.."
+                    ["CONFIRM_DETAILS_KEY"] = "Bu detaylar gönderildi, teşekkür ederim..",
+                    ["HERE"] = "!"
                 },
             };
         }
@@ -290,7 +298,7 @@ namespace NewsParser.Modules
                 .AddField("Username", report.Nickname, true)
                 .AddField("Details", report.Details);
 
-            await (supportChannel as CachedTextChannel).SendMessageAsync(embed: embed.Build());
+            await (supportChannel as CachedTextChannel).SendMessageAsync(language["HERE"], embed: embed.Build());
         }
 
         public async Task<CachedMessage> NextMessageAsync(CachedUser user, CachedChannel channel)
