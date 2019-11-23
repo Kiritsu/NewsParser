@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Disqord.Collections
 {
-    internal readonly struct ReadOnlyUpcastingDictionary<TKey, TOriginalValue, TNewValue> : IReadOnlyDictionary<TKey, TNewValue>
+    internal sealed class ReadOnlyUpcastingDictionary<TKey, TOriginalValue, TNewValue> : IReadOnlyDictionary<TKey, TNewValue>
         where TOriginalValue : class, TNewValue
     {
         public IEnumerable<TKey> Keys => _dictionary.Keys;
@@ -40,7 +40,7 @@ namespace Disqord.Collections
         public IEnumerator<KeyValuePair<TKey, TNewValue>> GetEnumerator()
         {
             foreach (var kvp in _dictionary)
-                yield return new KeyValuePair<TKey, TNewValue>(kvp.Key, kvp.Value);
+                yield return KeyValuePair.Create(kvp.Key, (TNewValue) kvp.Value);
         }
 
         IEnumerator IEnumerable.GetEnumerator()

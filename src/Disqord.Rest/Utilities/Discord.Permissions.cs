@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -8,29 +8,41 @@ namespace Disqord
     public static partial class Discord
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool HasFlag(ulong rawValue, ulong flag)
+        internal static bool HasFlag(ulong rawValue, ulong flag)
             => (rawValue & flag) == flag;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void SetFlag(ref ulong rawValue, ulong flag)
+        internal static void SetFlag(ref ulong rawValue, ulong flag)
             => rawValue |= flag;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void UnsetFlag(ref ulong rawValue, ulong flag)
+        internal static void UnsetFlag(ref ulong rawValue, ulong flag)
+            => rawValue &= ~flag;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static bool HasFlag(uint rawValue, uint flag)
+            => (rawValue & flag) == flag;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static void SetFlag(ref uint rawValue, uint flag)
+            => rawValue |= flag;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static void UnsetFlag(ref uint rawValue, uint flag)
             => rawValue &= ~flag;
 
         public static class Permissions
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static void SetFlag(ref ulong rawValue, Permission flag)
+            internal static void SetFlag(ref ulong rawValue, Permission flag)
                 => Discord.SetFlag(ref rawValue, (ulong) flag);
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static bool HasFlag(ulong rawValue, Permission flag)
+            internal static bool HasFlag(ulong rawValue, Permission flag)
                 => Discord.HasFlag(rawValue, (ulong) flag);
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public static void UnsetFlag(ref ulong rawValue, Permission flag)
+            internal static void UnsetFlag(ref ulong rawValue, Permission flag)
                 => Discord.UnsetFlag(ref rawValue, (ulong) flag);
 
             public static ChannelPermissions CalculatePermissions(IGuild guild, IGuildChannel channel, IMember member, IEnumerable<IRole> roles)
@@ -66,20 +78,15 @@ namespace Disqord
                     permissions += overwrite.Permissions.Allowed;
                 }
 
-                if (channel is ITextChannel)
-                {
-                    if (!permissions.ViewChannel)
-                    {
-                        return ChannelPermissions.None;
-                    }
+                if (!permissions.ViewChannel)
+                    return ChannelPermissions.None;
 
-                    else if (!permissions.SendMessages)
-                    {
-                        permissions -= Permission.AttachFiles;
-                        permissions -= Permission.EmbedLinks;
-                        permissions -= Permission.MentionEveryone;
-                        permissions -= Permission.SendTtsMessages;
-                    }
+                if (channel is ITextChannel && !permissions.SendMessages)
+                {
+                    permissions -= Permission.AttachFiles |
+                        Permission.EmbedLinks |
+                        Permission.MentionEveryone |
+                        Permission.SendTtsMessages;
                 }
 
                 return permissions;
@@ -134,9 +141,9 @@ namespace Disqord
                 {
                     var flag = _perms[i];
                     if (flag > flags)
-                        yield return new KeyValuePair<Permission, bool>(flag, false);
+                        yield return KeyValuePair.Create(flag, false);
 
-                    yield return new KeyValuePair<Permission, bool>(flag, HasFlag(value, flag));
+                    yield return KeyValuePair.Create(flag, HasFlag(value, flag));
                 }
             }
 

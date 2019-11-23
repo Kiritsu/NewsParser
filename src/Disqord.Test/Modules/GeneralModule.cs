@@ -94,7 +94,7 @@ namespace NewsParser
             var rssEntities = db.GetCollection<RSSEntity>("rsss");
             rssEntities.EnsureIndex(x => x.Id);
 
-            var builder = new EmbedBuilder()
+            var builder = new LocalEmbedBuilder()
                 .WithColor(Color.Aqua);
 
             foreach (var group in rssEntities.FindAll().GroupBy(x => x.ChannelId))

@@ -1,8 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Disqord.Rest;
-using Disqord.Rest.AuditLogs;
 
 namespace Disqord
 {
@@ -10,17 +9,23 @@ namespace Disqord
     {
         Task<IReadOnlyList<RestWebhook>> GetWebhooksAsync(RestRequestOptions options = null);
 
-        RestRequestEnumerator<RestAuditLog> GetAuditLogsEnumerator(int limit = 100, Snowflake? userId = null, Snowflake? startFromId = null);
+        //RestRequestEnumerator<RestAuditLog> GetAuditLogsEnumerator(int limit = 100, Snowflake? userId = null, Snowflake? startFromId = null);
 
-        RestRequestEnumerator<T> GetAuditLogsEnumerator<T>(int limit = 100, Snowflake? userId = null, Snowflake? startFromId = null) where T : RestAuditLog;
+        //RestRequestEnumerator<T> GetAuditLogsEnumerator<T>(int limit = 100, Snowflake? userId = null, Snowflake? startFromId = null) where T : RestAuditLog;
 
-        Task<IReadOnlyList<RestAuditLog>> GetAuditLogsAsync(int limit = 100, Snowflake? userId = null, Snowflake? startFromId = null, RestRequestOptions options = null);
+        //Task<IReadOnlyList<RestAuditLog>> GetAuditLogsAsync(int limit = 100, Snowflake? userId = null, Snowflake? startFromId = null, RestRequestOptions options = null);
 
-        Task<IReadOnlyList<T>> GetAuditLogsAsync<T>(int limit = 100, Snowflake? userId = null, Snowflake? startFromId = null, RestRequestOptions options = null) where T : RestAuditLog;
+        //Task<IReadOnlyList<T>> GetAuditLogsAsync<T>(int limit = 100, Snowflake? userId = null, Snowflake? startFromId = null, RestRequestOptions options = null) where T : RestAuditLog;
 
         Task ModifyAsync(Action<ModifyGuildProperties> action, RestRequestOptions options = null);
 
         Task<IReadOnlyList<RestGuildChannel>> GetChannelsAsync(RestRequestOptions options = null);
+
+        Task<RestTextChannel> CreateTextChannelAsync(string name, Action<CreateTextChannelProperties> action = null, RestRequestOptions options = null);
+
+        Task<RestVoiceChannel> CreateVoiceChannelAsync(string name, Action<CreateVoiceChannelProperties> action = null, RestRequestOptions options = null);
+
+        Task<RestCategoryChannel> CreateCategoryChannelAsync(string name, Action<CreateCategoryChannelProperties> action = null, RestRequestOptions options = null);
 
         Task ReorderChannelsAsync(IReadOnlyDictionary<Snowflake, int> positions, RestRequestOptions options = null);
 
@@ -78,7 +83,7 @@ namespace Disqord
 
         Task<RestGuildEmoji> GetEmojiAsync(Snowflake emojiId, RestRequestOptions options = null);
 
-        Task<RestGuildEmoji> CreateEmojiAsync(string name, LocalAttachment image, IEnumerable<Snowflake> roleIds = null, RestRequestOptions options = null);
+        Task<RestGuildEmoji> CreateEmojiAsync(LocalAttachment image, string name = null, IEnumerable<Snowflake> roleIds = null, RestRequestOptions options = null);
 
         Task<RestGuildEmoji> ModifyEmojiAsync(Snowflake emojiId, Action<ModifyGuildEmojiProperties> action, RestRequestOptions options = null);
 

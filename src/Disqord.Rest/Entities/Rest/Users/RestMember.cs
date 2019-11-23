@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using Disqord.Models;
@@ -7,7 +7,13 @@ namespace Disqord.Rest
 {
     public sealed partial class RestMember : RestUser, IMember
     {
+        public Snowflake GuildId { get; }
+
+        public RestDownloadable<RestGuild> Guild { get; }
+
         public string Nick { get; private set; }
+
+        public string DisplayName => Nick ?? Name;
 
         public IReadOnlyCollection<Snowflake> RoleIds { get; private set; }
 
@@ -17,17 +23,13 @@ namespace Disqord.Rest
 
         public bool IsDeafened { get; }
 
-        public Snowflake GuildId { get; }
-
-        public RestDownloadable<RestGuild> Guild { get; }
-
         public override string Mention => Discord.MentionUser(this);
 
         public DateTimeOffset? BoostedAt { get; private set; }
 
         public bool IsBoosting => BoostedAt != null;
 
-        internal RestMember(RestDiscordClient client, MemberModel model, Snowflake guildId) : base(client, model.User)
+        internal RestMember(RestDiscordClient client, Snowflake guildId, MemberModel model) : base(client, model.User)
         {
             GuildId = guildId;
             Guild = new RestDownloadable<RestGuild>(options => Client.GetGuildAsync(GuildId, options));

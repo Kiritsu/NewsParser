@@ -3,7 +3,7 @@ using System.IO;
 
 namespace Disqord.WebSocket
 {
-    public sealed class WebSocketMessageReceivedEventArgs : EventArgs
+    internal sealed class WebSocketMessageReceivedEventArgs : EventArgs
     {
         public Stream Stream { get; }
 

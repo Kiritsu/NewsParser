@@ -3,7 +3,7 @@ using System.Net.WebSockets;
 
 namespace Disqord.WebSocket
 {
-    public sealed class WebSocketClosedEventArgs : EventArgs
+    internal sealed class WebSocketClosedEventArgs : EventArgs
     {
         public WebSocketCloseStatus? Status { get; }
 

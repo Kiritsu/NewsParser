@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -30,19 +31,42 @@ namespace Disqord.Serialization.Json.Newtonsoft
                 using (var streamReader = new StreamReader(stream, UTF8, leaveOpen: true))
                 using (var jsonReader = new JsonTextReader(streamReader))
                 {
-#if DEBUG
-                    var jObject = JToken.Load(jsonReader);
-                    if (Debug.DumpJson)
+                    if (Library.Debug.DumpJson)
+                    {
+                        var jObject = JToken.Load(jsonReader);
                         Console.WriteLine(jObject);
-                    return jObject.ToObject<T>(_serializer);
-#else
-                    return _serializer.Deserialize<T>(jsonReader);
-#endif
+                        return jObject.ToObject<T>(_serializer);
+                    }
+                    else
+                    {
+                        return _serializer.Deserialize<T>(jsonReader);
+                    }
                 }
             }
             catch (Exception ex)
             {
                 throw new SerializationException("An exception occured for Deserialize.", ex);
+            }
+        }
+
+        public async Task<T> DeserializeAsync<T>(Stream stream)
+        {
+            try
+            {
+                using (var streamReader = new StreamReader(stream, UTF8, leaveOpen: true))
+                using (var jsonReader = new JsonTextReader(streamReader))
+                {
+                    var token = await JToken.LoadAsync(jsonReader).ConfigureAwait(false);
+
+                    if (Library.Debug.DumpJson)
+                        Console.WriteLine(token);
+
+                    return token.ToObject<T>(_serializer);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new SerializationException("An exception occured for DeserializeAsync.", ex);
             }
         }
 
@@ -83,14 +107,17 @@ namespace Disqord.Serialization.Json.Newtonsoft
         {
             try
             {
-                if (value == null || value is T tValue && tValue == default)
+                if (value == null)
                     return default;
 
-                var jObject = JToken.FromObject(value, _serializer);
-#if DEBUG
-                if (Debug.DumpJson)
+                if (value is T tValue)
+                    return tValue;
+
+                var jObject = value as JToken ?? JToken.FromObject(value, _serializer);
+
+                if (Library.Debug.DumpJson)
                     Console.WriteLine(jObject);
-#endif
+
                 return jObject.ToObject<T>(_serializer);
             }
             catch (Exception ex)

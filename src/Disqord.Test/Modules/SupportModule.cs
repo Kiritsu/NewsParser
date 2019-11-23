@@ -163,7 +163,7 @@ namespace NewsParser.Modules
             Enum.TryParse(report.Community, true, out lang);
 
             var supportChannel = Context.Bot.GetChannel(LangChannels[lang]);
-            var embed = new EmbedBuilder()
+            var embed = new LocalEmbedBuilder()
                 .WithColor(Color.DarkOrange)
                 .WithTitle($"Support request in community **{report.Community}** (ID#{report.Id}) has been updated")
                 .WithDescription($"This request was created by `{Context.User.Name.Replace("`", "")}#{Context.User.Discriminator}`.")
@@ -289,7 +289,7 @@ namespace NewsParser.Modules
             await Context.User.SendMessageAsync(string.Format(language["NEXT_KEY"], Context.Prefix, report.Id));
 
             var supportChannel = Context.Bot.GetChannel(LangChannels[lang]);
-            var embed = new EmbedBuilder()
+            var embed = new LocalEmbedBuilder()
                 .WithColor(Color.DarkBlue)
                 .WithTitle($"Support request in community **{report.Community}** (ID#{report.Id})")
                 .WithDescription($"This request has been created by `{Context.User.Name.Replace("`", "")}#{Context.User.Discriminator}`.")

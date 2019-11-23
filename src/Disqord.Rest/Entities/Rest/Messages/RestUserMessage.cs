@@ -10,23 +10,31 @@ namespace Disqord.Rest
     {
         public override string Content => _content;
 
-        public DateTimeOffset? EditedTimestamp { get; private set; }
+        public DateTimeOffset? EditedAt { get; private set; }
 
         public bool IsTextToSpeech { get; }
 
         public bool MentionsEveryone { get; private set; }
 
-        public IReadOnlyList<Snowflake> RoleIdsMentioned { get; private set; }
+        public IReadOnlyList<Snowflake> MentionedRoleIds { get; private set; }
 
         public IReadOnlyList<Attachment> Attachments { get; private set; }
 
         public IReadOnlyList<Embed> Embeds { get; private set; }
 
-        public Snowflake? Nonce { get; }
+        public string Nonce { get; }
 
         public bool IsPinned { get; private set; }
 
         public Snowflake? WebhookId { get; }
+
+        public MessageFlags Flags { get; private set; }
+
+        public MessageActivity Activity { get; private set; }
+
+        public MessageApplication Application { get; private set; }
+
+        public MessageReference Reference { get; private set; }
 
         private string _content;
 
@@ -43,7 +51,7 @@ namespace Disqord.Rest
         internal override void Update(MessageModel model)
         {
             if (model.EditedTimestamp.HasValue)
-                EditedTimestamp = model.EditedTimestamp.Value;
+                EditedAt = model.EditedTimestamp.Value;
 
             if (model.Content.HasValue)
                 _content = model.Content.Value;
@@ -52,7 +60,7 @@ namespace Disqord.Rest
                 MentionsEveryone = model.MentionEveryone.Value;
 
             if (model.RoleMentions.HasValue)
-                RoleIdsMentioned = model.RoleMentions.Value.Select(x => new Snowflake(x)).ToImmutableArray();
+                MentionedRoleIds = model.RoleMentions.Value.Select(x => new Snowflake(x)).ToImmutableArray();
 
             if (model.Attachments.HasValue)
                 Attachments = model.Attachments.Value.Select(x => x.ToAttachment()).ToImmutableArray();
@@ -62,6 +70,18 @@ namespace Disqord.Rest
 
             if (model.Pinned.HasValue)
                 IsPinned = model.Pinned.Value;
+
+            if (model.Flags.HasValue)
+                Flags = model.Flags.Value;
+
+            if (model.Activity.HasValue)
+                Activity = model.Activity.Value.ToActivity();
+
+            if (model.Application.HasValue)
+                Application = model.Application.Value.ToApplication();
+
+            if (model.MessageReference.HasValue)
+                Reference = model.MessageReference.Value.ToReference();
 
             base.Update(model);
         }

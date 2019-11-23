@@ -1,7 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Disqord.Rest.AuditLogs;
 
 namespace Disqord.Rest
 {
@@ -21,17 +20,17 @@ namespace Disqord.Rest
             return webhooks;
         }
 
-        public RestRequestEnumerator<RestAuditLog> GetAuditLogsEnumerator(int limit = 100, Snowflake? userId = null, Snowflake? startFromId = null)
-            => Client.GetAuditLogsEnumerator(Id, limit, userId, startFromId);
+        //public RestRequestEnumerator<RestAuditLog> GetAuditLogsEnumerator(int limit = 100, Snowflake? userId = null, Snowflake? startFromId = null)
+        //    => Client.GetAuditLogsEnumerator(Id, limit, userId, startFromId);
 
-        public RestRequestEnumerator<T> GetAuditLogsEnumerator<T>(int limit = 100, Snowflake? userId = null, Snowflake? startFromId = null) where T : RestAuditLog
-            => Client.GetAuditLogsEnumerator<T>(Id, limit, userId, startFromId);
+        //public RestRequestEnumerator<T> GetAuditLogsEnumerator<T>(int limit = 100, Snowflake? userId = null, Snowflake? startFromId = null) where T : RestAuditLog
+        //    => Client.GetAuditLogsEnumerator<T>(Id, limit, userId, startFromId);
 
-        public Task<IReadOnlyList<RestAuditLog>> GetAuditLogsAsync(int limit = 100, Snowflake? userId = null, Snowflake? startFromId = null, RestRequestOptions options = null)
-            => Client.GetAuditLogsAsync(Id, limit, userId, startFromId, options);
+        //public Task<IReadOnlyList<RestAuditLog>> GetAuditLogsAsync(int limit = 100, Snowflake? userId = null, Snowflake? startFromId = null, RestRequestOptions options = null)
+        //    => Client.GetAuditLogsAsync(Id, limit, userId, startFromId, options);
 
-        public Task<IReadOnlyList<T>> GetAuditLogsAsync<T>(int limit = 100, Snowflake? userId = null, Snowflake? startFromId = null, RestRequestOptions options = null) where T : RestAuditLog
-            => Client.GetAuditLogsAsync<T>(Id, limit, userId, startFromId, options);
+        //public Task<IReadOnlyList<T>> GetAuditLogsAsync<T>(int limit = 100, Snowflake? userId = null, Snowflake? startFromId = null, RestRequestOptions options = null) where T : RestAuditLog
+        //    => Client.GetAuditLogsAsync<T>(Id, limit, userId, startFromId, options);
 
         public async Task ModifyAsync(Action<ModifyGuildProperties> action, RestRequestOptions options = null)
         {
@@ -47,6 +46,15 @@ namespace Disqord.Rest
 
             return channels;
         }
+
+        public Task<RestTextChannel> CreateTextChannelAsync(string name, Action<CreateTextChannelProperties> action = null, RestRequestOptions options = null)
+            => Client.CreateTextChannelAsync(Id, name, action, options);
+
+        public Task<RestVoiceChannel> CreateVoiceChannelAsync(string name, Action<CreateVoiceChannelProperties> action = null, RestRequestOptions options = null)
+            => Client.CreateVoiceChannelAsync(Id, name, action, options);
+
+        public Task<RestCategoryChannel> CreateCategoryChannelAsync(string name, Action<CreateCategoryChannelProperties> action = null, RestRequestOptions options = null)
+            => Client.CreateCategoryChannelAsync(Id, name, action, options);
 
         public Task ReorderChannelsAsync(IReadOnlyDictionary<Snowflake, int> positions, RestRequestOptions options = null)
             => Client.ReorderChannelsAsync(Id, positions, options);
@@ -196,9 +204,9 @@ namespace Disqord.Rest
             return emoji;
         }
 
-        public async Task<RestGuildEmoji> CreateEmojiAsync(string name, LocalAttachment image, IEnumerable<Snowflake> roleIds = null, RestRequestOptions options = null)
+        public async Task<RestGuildEmoji> CreateEmojiAsync(LocalAttachment image, string name = null, IEnumerable<Snowflake> roleIds = null, RestRequestOptions options = null)
         {
-            var emoji = await Client.CreateGuildEmojiAsync(Id, name, image, roleIds, options).ConfigureAwait(false);
+            var emoji = await Client.CreateGuildEmojiAsync(Id, image, name, roleIds, options).ConfigureAwait(false);
             emoji.Guild.SetValue(this);
             return emoji;
         }

@@ -14,7 +14,7 @@ namespace Disqord.Rest
         public async Task<IReadOnlyList<RestGuildEmoji>> GetGuildEmojisAsync(Snowflake guildId, RestRequestOptions options = null)
         {
             var models = await ApiClient.ListGuildEmojisAsync(guildId, options).ConfigureAwait(false);
-            return models.Select(x => new RestGuildEmoji(this, x, guildId)).ToImmutableArray();
+            return models.Select(x => new RestGuildEmoji(this, guildId, x)).ToImmutableArray();
         }
 
         public async Task<RestGuildEmoji> GetGuildEmojiAsync(Snowflake guildId, Snowflake emojiId, RestRequestOptions options = null)
@@ -22,7 +22,7 @@ namespace Disqord.Rest
             try
             {
                 var model = await ApiClient.GetGuildEmojiAsync(guildId, emojiId, options).ConfigureAwait(false);
-                return new RestGuildEmoji(this, model, guildId);
+                return new RestGuildEmoji(this, guildId, model);
             }
             catch (DiscordHttpException ex) when (ex.HttpStatusCode == HttpStatusCode.NotFound && ex.JsonErrorCode == JsonErrorCode.UnknownEmoji)
             {
@@ -30,20 +30,20 @@ namespace Disqord.Rest
             }
         }
 
-        public async Task<RestGuildEmoji> CreateGuildEmojiAsync(Snowflake guildId, string name, LocalAttachment image, IEnumerable<Snowflake> roleIds = null, RestRequestOptions options = null)
+        public async Task<RestGuildEmoji> CreateGuildEmojiAsync(Snowflake guildId, LocalAttachment image, string name = null, IEnumerable<Snowflake> roleIds = null, RestRequestOptions options = null)
         {
             if (image == null)
                 throw new ArgumentNullException(nameof(image));
 
             name = name ?? Path.GetFileNameWithoutExtension(image.FileName);
-            var model = await ApiClient.CreateGuildEmojiAsync(guildId, name, image, roleIds.Select(x => x.RawValue), options).ConfigureAwait(false);
-            return new RestGuildEmoji(this, model, guildId);
+            var model = await ApiClient.CreateGuildEmojiAsync(guildId, name, image, roleIds?.Select(x => x.RawValue), options).ConfigureAwait(false);
+            return new RestGuildEmoji(this, guildId, model);
         }
 
         public async Task<RestGuildEmoji> ModifyGuildEmojiAsync(Snowflake guildId, Snowflake emojiId, Action<ModifyGuildEmojiProperties> action, RestRequestOptions options = null)
         {
             var model = await InternalModifyGuildEmojiAsync(guildId, emojiId, action, options).ConfigureAwait(false);
-            return new RestGuildEmoji(this, model, guildId);
+            return new RestGuildEmoji(this, guildId, model);
         }
 
         internal async Task<EmojiModel> InternalModifyGuildEmojiAsync(Snowflake guildId, Snowflake emojiId, Action<ModifyGuildEmojiProperties> action, RestRequestOptions options = null)

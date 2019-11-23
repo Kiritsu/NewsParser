@@ -46,7 +46,7 @@ namespace Disqord.WebSocket
 
         private readonly MemoryStream _compressed;
         private readonly DeflateStream _deflate;
-        private bool _disposed;
+        private bool _isDisposed;
 
         public WebSocketClient()
         {
@@ -56,7 +56,7 @@ namespace Disqord.WebSocket
 
         public async Task ConnectAsync(Uri url, CancellationToken token)
         {
-            if (_disposed)
+            if (_isDisposed)
                 throw new ObjectDisposedException(nameof(WebSocketClient));
 
             DisposeTokens();
@@ -70,7 +70,7 @@ namespace Disqord.WebSocket
 
         public Task SendAsync(WebSocketRequest request)
         {
-            if (_disposed)
+            if (_isDisposed)
                 throw new ObjectDisposedException(nameof(WebSocketClient));
 
             _messageQueue.Enqueue(request);
@@ -80,6 +80,7 @@ namespace Disqord.WebSocket
                 _sendCts = new CancellationTokenSource();
                 _sendTask = Task.Run(RunSendAsync);
             }
+
             return request.WaitAsync();
         }
 
@@ -87,7 +88,7 @@ namespace Disqord.WebSocket
         {
             while (_messageQueue.TryDequeue(out var request) && !_sendCts.IsCancellationRequested)
             {
-                using (var linkedSource = CancellationTokenSource.CreateLinkedTokenSource(_sendCts.Token, request.Token))
+                using (var linkedSource = CancellationTokenSource.CreateLinkedTokenSource(_sendCts.Token, request.CancellationToken))
                 {
                     try
                     {
@@ -201,7 +202,7 @@ namespace Disqord.WebSocket
 
         public async Task CloseAsync()
         {
-            if (_disposed)
+            if (_isDisposed)
                 throw new ObjectDisposedException(nameof(WebSocketClient));
 
             lock (_closeLock)
@@ -228,7 +229,7 @@ namespace Disqord.WebSocket
             DisposeTokens();
         }
 
-        private void DisposeTokens()
+        public void DisposeTokens()
         {
             try
             {
@@ -236,20 +237,22 @@ namespace Disqord.WebSocket
             }
             catch { }
             _sendCts?.Dispose();
+            _sendCts = null;
             try
             {
                 _receiveCts?.Cancel();
             }
             catch { }
             _receiveCts?.Dispose();
+            _receiveCts = null;
         }
 
         public void Dispose()
         {
-            if (_disposed)
+            if (_isDisposed)
                 return;
 
-            _disposed = true;
+            _isDisposed = true;
             DisposeTokens();
             _compressed.Dispose();
             _deflate.Dispose();

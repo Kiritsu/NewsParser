@@ -87,7 +87,7 @@ namespace Disqord.Rest
             => ApiClient.DeleteWebhookWithTokenAsync(webhookId, webhookToken, options);
 
         public async Task<RestUserMessage> ExecuteWebhookAsync(Snowflake webhookId, string webhookToken,
-            string content = null, bool textToSpeech = false, IEnumerable<Embed> embeds = null,
+            string content = null, bool textToSpeech = false, IEnumerable<LocalEmbed> embeds = null,
             string name = null, string avatarUrl = null,
             bool wait = false,
             RestRequestOptions options = null)
@@ -101,11 +101,14 @@ namespace Disqord.Rest
 
         public async Task<RestUserMessage> ExecuteWebhookAsync(Snowflake webhookId, string webhookToken,
             LocalAttachment attachment,
-            string content = null, bool textToSpeech = false, IEnumerable<Embed> embeds = null,
+            string content = null, bool textToSpeech = false, IEnumerable<LocalEmbed> embeds = null,
             string name = null, string avatarUrl = null,
             bool wait = false,
             RestRequestOptions options = null)
         {
+            if (attachment == null)
+                throw new ArgumentNullException(nameof(attachment));
+
             var model = await ApiClient.ExecuteWebhookAsync(webhookId, webhookToken, attachment, content, textToSpeech, embeds, name, avatarUrl, wait, options).ConfigureAwait(false);
             if (!wait)
                 return null;
@@ -115,11 +118,14 @@ namespace Disqord.Rest
 
         public async Task<RestUserMessage> ExecuteWebhookAsync(Snowflake webhookId, string webhookToken,
             IEnumerable<LocalAttachment> attachments,
-            string content = null, bool textToSpeech = false, IEnumerable<Embed> embeds = null,
+            string content = null, bool textToSpeech = false, IEnumerable<LocalEmbed> embeds = null,
             string name = null, string avatarUrl = null,
             bool wait = false,
             RestRequestOptions options = null)
         {
+            if (attachments == null)
+                throw new ArgumentNullException(nameof(attachments));
+
             var model = await ApiClient.ExecuteWebhookAsync(webhookId, webhookToken, attachments, content, textToSpeech, embeds, name, avatarUrl, wait, options).ConfigureAwait(false);
             if (!wait)
                 return null;

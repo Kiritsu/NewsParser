@@ -64,11 +64,11 @@ namespace NewsParser
                 return;
             }
 
-            var embed = new EmbedBuilder()
+            var embed = new LocalEmbedBuilder()
              .WithColor(Color.DarkRed)
              .WithTitle("Message Updated")
              .AddField("Author", $"{e.NewMessage.Author.Name}#{e.NewMessage.Author.Discriminator}", true)
-             .AddField("Date", $"{e.NewMessage.Timestamp:G}", true)
+             .AddField("Date", $"{e.NewMessage.Id.CreatedAt:G}", true)
              .AddField("Channel", $"{(e.Channel as IMentionable).Mention}", true)
              .AddField("Old Content", $"{(e.OldMessage.HasValue ? e.OldMessage.Value.Content : "**Unknown Message**")}")
              .AddField("New Content", $"{e.NewMessage.Content}")
@@ -100,11 +100,11 @@ namespace NewsParser
                 return;
             }
 
-            var embed = new EmbedBuilder()
+            var embed = new LocalEmbedBuilder()
                 .WithColor(Color.DarkRed)
                 .WithTitle("Message Deleted")
                 .AddField("Author", $"{e.Message.Value.Author.Name}#{e.Message.Value.Author.Discriminator}", true)
-                .AddField("Date", $"{e.Message.Value.Timestamp:G}", true)
+                .AddField("Date", $"{e.Message.Value.Id.CreatedAt:G}", true)
                 .AddField("Channel", $"{(e.Channel as IMentionable).Mention}", true)
                 .AddField("Content", $"{e.Message.Value.Content}")
                 .Build();

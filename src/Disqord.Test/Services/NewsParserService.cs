@@ -105,8 +105,8 @@ namespace NewsParser.Services
                     topicEntities.Insert(topic);
 
                     await (channel as ITextChannel).SendMessageAsync(
-                        embed: new EmbedBuilder()
-                            .WithAuthor(new EmbedAuthorBuilder()
+                        embed: new LocalEmbedBuilder()
+                            .WithAuthor(new LocalEmbedAuthorBuilder()
                                             .WithName(topic.Name)
                                             .WithUrl(topic.Url))
                             .WithColor(Color.Aqua)

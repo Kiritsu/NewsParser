@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Disqord
 {
@@ -11,12 +10,8 @@ namespace Disqord
 
         string Content { get; }
 
-        DateTimeOffset Timestamp { get; }
+        IReadOnlyList<IUser> MentionedUsers { get; }
 
-        IReadOnlyList<IUser> UserMentions { get; }
-
-        // TODO: activity
-
-        // TODO: application
+        IReadOnlyDictionary<IEmoji, ReactionData> Reactions { get; }
     }
 }

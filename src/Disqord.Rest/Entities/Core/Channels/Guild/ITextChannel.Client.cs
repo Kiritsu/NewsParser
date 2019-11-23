@@ -5,7 +5,7 @@ using Disqord.Rest;
 
 namespace Disqord
 {
-    public partial interface ITextChannel : IGuildChannel, IMessageChannel, IMentionable, ITaggable
+    public partial interface ITextChannel : INestedChannel, IMessageChannel, IMentionable, ITaggable
     {
         Task ModifyAsync(Action<ModifyTextChannelProperties> action, RestRequestOptions options = null);
 
@@ -19,6 +19,6 @@ namespace Disqord
 
         Task RemoveMemberReactionAsync(Snowflake messageId, Snowflake memberId, IEmoji emoji, RestRequestOptions options = null);
 
-        Task RemoveAllReactionsAsync(Snowflake messageId, RestRequestOptions options = null);
+        Task ClearReactionsAsync(Snowflake messageId, RestRequestOptions options = null);
     }
 }

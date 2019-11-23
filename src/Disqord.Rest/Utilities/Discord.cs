@@ -1,8 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Text.RegularExpressions;
-using Disqord.Rest;
 
 namespace Disqord
 {
@@ -11,25 +9,6 @@ namespace Disqord
     /// </summary>
     public static partial class Discord
     {
-        internal static class Internal
-        {
-            internal static string GetAvatarUrl(RestWebhook webhook, ImageFormat format = default, int size = 2048)
-                => webhook.AvatarHash != null
-                    ? GetUserAvatarUrl(webhook.Id, webhook.AvatarHash, format, size)
-                    : GetDefaultUserAvatarUrl(DefaultAvatarColor.Blurple);
-
-            internal static string GetAvatarUrl(IUser user, ImageFormat format = default, int size = 2048)
-                => user.AvatarHash != null
-                    ? GetUserAvatarUrl(user.Id, user.AvatarHash, format, size)
-                    : GetDefaultUserAvatarUrl(user.Discriminator);
-
-            internal static string Tag(IUser user)
-                => $"{user.Name}#{user.Discriminator}";
-
-            internal static CultureInfo CreateLocale(string locale)
-                => CultureInfo.ReadOnly(new CultureInfo(locale));
-        }
-
         public const int DEFAULT_MAX_PRESENCE_COUNT = 5000;
 
         /// <summary>
@@ -47,7 +26,7 @@ namespace Disqord
         ///     The url of the custom emoji.
         /// </returns>
         public static string GetCustomEmojiUrl(Snowflake emojiId, bool isAnimated, int size = 2048)
-            => FormatImageUrl($"emoji/{emojiId}", isAnimated ? ImageFormat.Gif : ImageFormat.Png, size);
+            => FormatImageUrl($"emojis/{emojiId}", isAnimated ? ImageFormat.Gif : ImageFormat.Png, size);
 
         /// <summary>
         ///     Returns the url for a guild's icon.
@@ -156,7 +135,7 @@ namespace Disqord
             if (emoji == null)
                 throw new ArgumentNullException(nameof(emoji));
 
-            return emoji is CustomEmoji customEmoji
+            return emoji is ICustomEmoji customEmoji
                 ? $"{customEmoji.Name}:{customEmoji.Id}"
                 : emoji.Name;
         }
@@ -169,7 +148,7 @@ namespace Disqord
             return emoji is ICustomEmoji customEmoji
                 ? customEmoji.IsAnimated
                     ? $"<a:{customEmoji.Name}:{customEmoji.Id}>"
-                    : $"<{customEmoji.Name}:{customEmoji.Id}>"
+                    : $"<:{customEmoji.Name}:{customEmoji.Id}>"
                 : emoji.Name;
         }
 
@@ -319,67 +298,5 @@ namespace Disqord
         public static readonly Regex JumpLinkRegex = new Regex(
             @"^https?://(?:(ptb|canary)\.)?discordapp\.com/channels/(?<guild_id>([0-9]{15,21})|(@me))/(?<channel_id>[0-9]{15,21})/(?<message_id>[0-9]{15,21})/?$",
             RegexOptions.Compiled);
-
-        internal static string GetSystemMessageContent(ISystemMessage message, IGuild guild)
-        {
-            return message.Type switch
-            {
-                SystemMessageType.RecipientAdded => $"{message.Author.Name} added {message.UserMentions[0].Name} to the group.",
-                SystemMessageType.RecipientRemoved => $"{message.Author.Name} removed {message.UserMentions[0].Name} from the group.",
-                SystemMessageType.Call => throw new NotImplementedException(),
-                SystemMessageType.ChannelNameChanged => $"{message.Author.Name} changed the channel name: {message.RawContent}",
-                SystemMessageType.ChannelIconChanged => $"{message.Author.Name} changed the channel icon.",
-                SystemMessageType.ChannelMessagePinned => $"{message.Author.Name} pinned a message to this channel.",
-                SystemMessageType.MemberJoined => string.Format(MemberJoinFormats[message.Timestamp.ToUnixTimeMilliseconds() % MemberJoinFormats.Length], message.Author.Name),
-                SystemMessageType.GuildBoosted => $"{message.Author.Name} just boosted the server!",
-                SystemMessageType.GuildBoostedFirstTier => $"{message.Author.Name} just boosted the server! {guild?.Name ?? "The server"} has achieved **Level 1!**",
-                SystemMessageType.GuildBoostedSecondTier => $"{message.Author.Name} just boosted the server! {guild?.Name ?? "The server"} has achieved **Level 2!**",
-                SystemMessageType.GuildBoostedThirdTier => $"{message.Author.Name} just boosted the server! {guild?.Name ?? "The server"} has achieved **Level 3!**",
-                _ => string.Empty,
-            };
-        }
-
-        internal static readonly string[] MemberJoinFormats =
-        {
-            "{0} just joined the server - glhf!",
-            "{0} just joined. Everyone, look busy!",
-            "{0} just joined. Can I get a heal?",
-            "{0} joined your party.",
-            "{0} joined. You must construct additional pylons.",
-            "Ermagherd. {0} is here.",
-            "Welcome, {0}. Stay awhile and listen.",
-            "Welcome, {0}. We were expecting you ( ͡° ͜ʖ ͡°)",
-            "Welcome, {0}. We hope you brought pizza.",
-            "Welcome {0}. Leave your weapons by the door.",
-            "A wild {0} appeared.",
-            "Swoooosh. {0} just landed.",
-            "Brace yourselves. {0} just joined the server.",
-            "{0} just joined... or did they?",
-            "{0} just arrived. Seems OP - please nerf.",
-            "{0} just slid into the server.",
-            "A {0} has spawned the server.",
-            "Big {0} showed up!",
-            "Where’s {0}? the server!",
-            "{0} hopped into the server. Kangaroo!!",
-            "{0} just showed up. Hold my beer.",
-            "Challenger approaching - {0} has appeared!",
-            "It's a bird! It's a plane! Nevermind, it's just {0}.",
-            "It's {0}! Praise the sun! \\\\[T]/",
-            "Never gonna give {0} up. Never gonna let {0} down.",
-            "{0} has joined the battle bus.",
-            "Cheers, love! {0}'s here!",
-            "Hey! Listen! {0} has joined!",
-            "We've been expecting you {0}",
-            "It's dangerous to go alone, take {0}!",
-            "{0} has joined the server! It's super effective!",
-            "Cheers, love! {0} is here!",
-            "{0} is here, as the prophecy foretold.",
-            "{0} has arrived. Party's over.",
-            "Ready player {0}",
-            "{0} is here to kick butt and chew bubblegum. And {0} is all out of gum.",
-            "Hello. Is it {0} you're looking for?",
-            "{0} has joined. Stay a while and listen!",
-            "Roses are red, violets are blue, {0} joined this server with you"
-        };
     }
 }

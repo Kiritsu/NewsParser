@@ -1,21 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Qmmands;
 
 namespace Disqord.Bot
 {
     public sealed class RequireRoleAttribute : GuildOnlyAttribute
     {
-        public IReadOnlyList<ulong> Ids { get; }
+        public Snowflake Id { get; }
 
-        public RequireRoleAttribute(params ulong[] ids)
+        public RequireRoleAttribute(ulong id)
         {
-            if (ids == null)
-                throw new ArgumentNullException(nameof(ids));
-
-            Ids = ids.ToImmutableArray();
+            Id = id;
         }
 
         public override ValueTask<CheckResult> CheckAsync(CommandContext _)
@@ -25,13 +19,10 @@ namespace Disqord.Bot
                 return baseResult;
 
             var context = _ as DiscordCommandContext;
-            for (var i = 0; i < Ids.Count; i++)
-            {
-                if (!context.Member.Roles.ContainsKey(Ids[i]))
-                    return CheckResult.Unsuccessful("You are not authorized to execute this.");
-            }
+            return context.Member.Roles.ContainsKey(Id)
+                ? CheckResult.Successful
+                : CheckResult.Unsuccessful($"You do not have the required role {Id}.");
 
-            return CheckResult.Successful;
         }
     }
 }

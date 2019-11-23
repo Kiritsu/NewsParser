@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Disqord.Logging;
 using Disqord.Models;
-using Disqord.Rest.AuditLogs;
 using Disqord.Serialization.Json;
 using Disqord.Serialization.Json.Newtonsoft;
 
@@ -85,15 +84,19 @@ namespace Disqord.Rest
             Log(LogMessageSeverity.Debug, $"Handling {request}.");
             HttpResponseMessage response;
             var options = request.Options;
-            using (var cts = new CancellationTokenSource(options?.Timeout ?? _defaultTimeout))
-            using (var linkedCts = options?.CancellationToken != null ? CancellationTokenSource.CreateLinkedTokenSource(cts.Token, options.CancellationToken.Value) : null)
+            using (var cts = new CancellationTokenSource(options != null && options.Timeout != default ? options.Timeout : _defaultTimeout))
+            using (var linkedCts = options != null ? CancellationTokenSource.CreateLinkedTokenSource(cts.Token, options.CancellationToken) : null)
             {
                 var ticks = Environment.TickCount;
-                response = await Http.SendAsync(request.HttpMessage, linkedCts?.Token ?? cts.Token).ConfigureAwait(false);
+                response = await Http.SendAsync(request.HttpMessage, HttpCompletionOption.ResponseHeadersRead, linkedCts?.Token ?? cts.Token).ConfigureAwait(false);
                 var ms = Environment.TickCount - ticks;
                 Log(LogMessageSeverity.Debug, $"Handling {request}; completed after {ms}ms.");
             }
+
             var rateLimit = new RateLimit(response.Headers);
+            if (Library.Debug.DumpRateLimits)
+                Console.WriteLine(rateLimit);
+
             if (!response.IsSuccessStatusCode)
             {
                 switch ((int) response.StatusCode)
@@ -140,31 +143,34 @@ namespace Disqord.Rest
         {
             await EnqueueRequestAsync(request).ConfigureAwait(false);
             var response = await request.CompleteAsync().ConfigureAwait(false);
+            if (response.StatusCode == HttpStatusCode.NoContent)
+                return null;
+
             using (var jsonStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
             {
-                return Serializer.Deserialize<T>(jsonStream);
+                return await Serializer.DeserializeAsync<T>(jsonStream).ConfigureAwait(false);
             }
         }
 
         // Audit Log
-        public Task<AuditLogModel> GetGuildAuditLogAsync(ulong guildId, int limit, ulong? userId, AuditLogAction? type, ulong? snowflake, RestRequestOptions options)
-        {
-            var parameters = new Dictionary<string, object>
-            {
-                ["limit"] = limit
-            };
+        //public Task<AuditLogModel> GetGuildAuditLogAsync(ulong guildId, int limit, ulong? userId, AuditLogAction? type, ulong? snowflake, RestRequestOptions options)
+        //{
+        //    var parameters = new Dictionary<string, object>
+        //    {
+        //        ["limit"] = limit
+        //    };
 
-            if (userId != null)
-                parameters["user_id"] = userId;
+        //    if (userId != null)
+        //        parameters["user_id"] = userId;
 
-            if (type != null)
-                parameters["action_type"] = (int) type;
+        //    if (type != null)
+        //        parameters["action_type"] = (int) type;
 
-            if (snowflake != null)
-                parameters["before"] = snowflake;
+        //    if (snowflake != null)
+        //        parameters["before"] = snowflake;
 
-            return SendRequestAsync<AuditLogModel>(new RestRequest(GET, $"guilds/{guildId:guild_id}/audit-logs", parameters, options));
-        }
+        //    return SendRequestAsync<AuditLogModel>(new RestRequest(GET, $"guilds/{guildId:guild_id}/audit-logs", parameters, options));
+        //}
 
         // Channel
         public Task<ChannelModel> GetChannelAsync(ulong channelId, RestRequestOptions options)
@@ -275,18 +281,18 @@ namespace Disqord.Rest
         public Task<MessageModel> GetChannelMessageAsync(ulong channelId, ulong messageId, RestRequestOptions options)
             => SendRequestAsync<MessageModel>(new RestRequest(GET, $"channels/{channelId:channel_id}/messages/{messageId}", options));
 
-        public Task<MessageModel> CreateMessageAsync(ulong channelId, string content, bool isTTS, Embed embed, RestRequestOptions options)
+        public Task<MessageModel> CreateMessageAsync(ulong channelId, string content, bool isTTS, LocalEmbed embed, RestRequestOptions options)
         {
             var requestContent = new CreateMessageContent
             {
                 Content = content,
                 Tts = isTTS,
-                Embed = embed?.ToModel()
+                Embed = embed.ToModel()
             };
             return SendRequestAsync<MessageModel>(new RestRequest(POST, $"channels/{channelId:channel_id}/messages", requestContent, options));
         }
 
-        public Task<MessageModel> CreateMessageAsync(ulong channelId, LocalAttachment attachment, string content, bool isTTS, Embed embed, RestRequestOptions options)
+        public Task<MessageModel> CreateMessageAsync(ulong channelId, LocalAttachment attachment, string content, bool isTTS, LocalEmbed embed, RestRequestOptions options)
         {
             var requestContent = new MultipartRequestContent<CreateMessageContent>
             {
@@ -294,14 +300,14 @@ namespace Disqord.Rest
                 {
                     Content = content,
                     Tts = isTTS,
-                    Embed = embed?.ToModel()
+                    Embed = embed.ToModel()
                 },
                 Attachment = attachment
             };
             return SendRequestAsync<MessageModel>(new RestRequest(POST, $"channels/{channelId:channel_id}/messages", requestContent, options));
         }
 
-        public Task<MessageModel> CreateMessageAsync(ulong channelId, IEnumerable<LocalAttachment> attachments, string content, bool isTTS, Embed embed, RestRequestOptions options)
+        public Task<MessageModel> CreateMessageAsync(ulong channelId, IEnumerable<LocalAttachment> attachments, string content, bool isTTS, LocalEmbed embed, RestRequestOptions options)
         {
             var requestContent = new MultipartRequestContent<CreateMessageContent>
             {
@@ -309,7 +315,7 @@ namespace Disqord.Rest
                 {
                     Content = content,
                     Tts = isTTS,
-                    Embed = embed?.ToModel()
+                    Embed = embed.ToModel()
                 },
                 Attachments = attachments.ToArray()
             };
@@ -465,7 +471,7 @@ namespace Disqord.Rest
             {
                 Name = name,
                 Image = image,
-                RoleIds = roleIds.ToArray()
+                RoleIds = roleIds?.ToArray()
             };
             return SendRequestAsync<EmojiModel>(new RestRequest(POST, $"guilds/{guildId:guild_id}/emojis", requestContent, options));
         }
@@ -543,51 +549,59 @@ namespace Disqord.Rest
         public Task<ChannelModel[]> GetGuildChannelsAsync(ulong guildId, RestRequestOptions options)
             => SendRequestAsync<ChannelModel[]>(new RestRequest(GET, $"guilds/{guildId:guild_id}/channels", options));
 
-        public Task<ChannelModel> CreateGuildChannelAsync(ulong guildId, ChannelType type, string name,
-            string topic, int bitrate, int userLimit, int slowmode, bool isNSFW,
-            IEnumerable<LocalOverwrite> overwrites, int? position, ulong? categoryId,
-            RestRequestOptions options)
+        public Task<ChannelModel> CreateGuildChannelAsync(ulong guildId, string name, CreateGuildChannelProperties properties, RestRequestOptions options)
         {
             if (name == null)
                 throw new ArgumentNullException(nameof(name));
 
             if (name.Length < 2 || name.Length > 100)
-                throw new ArgumentOutOfRangeException(nameof(name));
+                throw new ArgumentOutOfRangeException(nameof(name), $"The name must be between 2 and 100 characters long.");
 
             var requestContent = new CreateGuildChannelContent
             {
                 Name = name,
-                Type = type,
-                PermissionOvewrites = overwrites?.Select(x => x.ToModel()).ToArray() ?? Optional<IReadOnlyList<OverwriteModel>>.Empty,
-                Position = position ?? Optional<int>.Empty,
-                ParentId = categoryId ?? Optional<ulong>.Empty
+                PermissionOvewrites = properties.Overwrites.HasValue
+                    ? properties.Overwrites.Value.Select(x => x.ToModel()).ToArray()
+                    : Optional<IReadOnlyList<OverwriteModel>>.Empty
             };
-            switch (type)
+
+            if (properties is CreateNestedChannelProperties nestedProperties)
             {
-                case ChannelType.Text:
+                requestContent.ParentId = nestedProperties.ParentId.HasValue
+                    ? nestedProperties.ParentId.Value.RawValue
+                    : Optional<ulong>.Empty;
+
+                if (properties is CreateTextChannelProperties textProperties)
                 {
-                    if (topic != null && topic.Length > 1024)
-                        throw new ArgumentOutOfRangeException(nameof(topic));
+                    if (textProperties.Topic.HasValue && textProperties.Topic.Value != null && textProperties.Topic.Value.Length > 1024)
+                        throw new ArgumentOutOfRangeException("Topic");
 
-                    requestContent.Topic = topic;
-                    requestContent.RateLimitPerUser = slowmode;
-                    requestContent.Nsfw = isNSFW;
-                    break;
+                    requestContent.Type = ChannelType.Text;
+                    requestContent.Topic = textProperties.Topic;
+                    requestContent.RateLimitPerUser = textProperties.Slowmode;
+                    requestContent.Nsfw = textProperties.IsNsfw;
                 }
-
-                case ChannelType.Voice:
+                else if (properties is CreateVoiceChannelProperties voiceProperties)
                 {
-                    requestContent.Bitrate = bitrate;
-                    requestContent.UserLimit = userLimit;
-                    break;
+                    requestContent.Type = ChannelType.Voice;
+                    requestContent.Bitrate = voiceProperties.Bitrate;
+                    requestContent.UserLimit = voiceProperties.UserLimit;
                 }
-
-                case ChannelType.Category:
-                    break;
-
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(type));
+                else
+                {
+                    Log(LogMessageSeverity.Error, $"Unknown nested channel properties provided to modify. ({properties.GetType()})");
+                }
             }
+            else if (properties is CreateCategoryChannelProperties categoryProperties)
+            {
+                requestContent.Type = ChannelType.Category;
+                // No extra properties for category channels.
+            }
+            else
+            {
+                Log(LogMessageSeverity.Error, $"Unknown nested channel properties provided to modify. ({properties.GetType()})");
+            }
+
             return SendRequestAsync<ChannelModel>(new RestRequest(POST, $"guilds/{guildId:guild_id}/channels", requestContent, options));
         }
 
@@ -631,15 +645,19 @@ namespace Disqord.Rest
         {
             var requestContent = new ModifyGuildMemberContent
             {
-                Nick = properties.Nick.HasValue && properties.Nick.Value == null ? "" : properties.Nick,
+                Nick = properties.Nick.HasValue && properties.Nick.Value == null
+                    ? ""
+                    : properties.Nick,
                 RoleIds = properties.RoleIds.HasValue
                     ? properties.RoleIds.Value.Select(x => x.RawValue).ToArray()
                     : Optional<IReadOnlyList<ulong>>.Empty,
                 Mute = properties.Mute,
                 Deaf = properties.Deaf,
                 VoiceChannelId = properties.VoiceChannelId.HasValue
-                    ? properties.VoiceChannelId.Value.RawValue
-                    : Optional<ulong>.Empty
+                    ? properties.VoiceChannelId.Value != null
+                        ? properties.VoiceChannelId.Value.Value.RawValue
+                        : (ulong?) null
+                    : Optional<ulong?>.Empty
             };
             return SendRequestAsync(new RestRequest(PATCH, $"guilds/{guildId:guild_id}/members/{userId}", requestContent, options));
         }
@@ -714,7 +732,9 @@ namespace Disqord.Rest
             {
                 Name = properties.Name,
                 Permissions = properties.Permissions.HasValue ? properties.Permissions.Value.RawValue : Optional<ulong>.Empty,
-                Color = properties.Color.HasValue ? properties.Color.Value.RawValue : Optional<int>.Empty,
+                Color = properties.Color.HasValue
+                    ? properties.Color.Value?.RawValue ?? 0
+                    : Optional<int>.Empty,
                 Hoist = properties.IsHoisted,
                 Mentionable = properties.IsMentionable
             };
@@ -810,7 +830,7 @@ namespace Disqord.Rest
             {
                 if ((properties.Name.HasValue || properties.Password.HasValue || properties.Discriminator.HasValue)
                     && options.Password == null)
-                    throw new ArgumentException("The password is required to change the username, discriminator, or to set a new password.");
+                    throw new ArgumentException("The password is required to change the name, discriminator, or to set a new password.");
             }
 
             var requestContent = new ModifyCurrentUserContent
@@ -899,7 +919,7 @@ namespace Disqord.Rest
             => SendRequestAsync(new RestRequest(DELETE, $"webhooks/{webhookId:webhook_id}/{webhookToken}", options));
 
         public Task<MessageModel> ExecuteWebhookAsync(ulong webhookId, string webhookToken,
-            string content, bool isTTS, IEnumerable<Embed> embeds,
+            string content, bool isTTS, IEnumerable<LocalEmbed> embeds,
             string name, string avatarUrl,
             bool wait,
             RestRequestOptions options)
@@ -920,7 +940,7 @@ namespace Disqord.Rest
 
         public Task<MessageModel> ExecuteWebhookAsync(ulong webhookId, string webhookToken,
             LocalAttachment attachment,
-            string content, bool isTTS, IEnumerable<Embed> embeds,
+            string content, bool isTTS, IEnumerable<LocalEmbed> embeds,
             string name, string avatarUrl,
             bool wait,
             RestRequestOptions options)
@@ -945,7 +965,7 @@ namespace Disqord.Rest
 
         public Task<MessageModel> ExecuteWebhookAsync(ulong webhookId, string webhookToken,
             IEnumerable<LocalAttachment> attachments,
-            string content, bool isTTS, IEnumerable<Embed> embeds,
+            string content, bool isTTS, IEnumerable<LocalEmbed> embeds,
             string name, string avatarUrl,
             bool wait,
             RestRequestOptions options)

@@ -36,7 +36,7 @@ namespace Disqord.Rest
 
         public IReadOnlyDictionary<Snowflake, RestRole> Roles { get; private set; }
 
-        public IReadOnlyList<RestGuildEmoji> Emojis { get; private set; }
+        public IReadOnlyDictionary<Snowflake, RestGuildEmoji> Emojis { get; private set; }
 
         public IReadOnlyList<string> Features { get; private set; }
 
@@ -67,7 +67,7 @@ namespace Disqord.Rest
         public CultureInfo PreferredLocale { get; private set; }
 
         IReadOnlyDictionary<Snowflake, IRole> IGuild.Roles => new ReadOnlyUpcastingDictionary<Snowflake, RestRole, IRole>(Roles);
-        IReadOnlyList<IGuildEmoji> IGuild.Emojis => Emojis;
+        IReadOnlyDictionary<Snowflake, IGuildEmoji> IGuild.Emojis => new ReadOnlyUpcastingDictionary<Snowflake, RestGuildEmoji, IGuildEmoji>(Emojis);
 
         internal RestGuild(RestDiscordClient client, GuildModel model) : base(client, model.Id)
         {
@@ -115,18 +115,18 @@ namespace Disqord.Rest
             if (model.Roles.HasValue)
                 Roles = new ReadOnlyDictionary<Snowflake, RestRole>(model.Roles.Value.ToDictionary(x => new Snowflake(x.Id), x =>
                 {
-                    var role = new RestRole(Client, x, Id);
+                    var role = new RestRole(Client, Id, x);
                     role.Guild.SetValue(this);
                     return role;
                 }));
 
             if (model.Emojis.HasValue)
-                Emojis = model.Emojis.Value.Select(x =>
+                Emojis = model.Emojis.Value.ToDictionary(x => new Snowflake(x.Id.Value), x =>
                 {
-                    var emoji = new RestGuildEmoji(Client, x, Id);
+                    var emoji = new RestGuildEmoji(Client, Id, x);
                     emoji.Guild.SetValue(this);
                     return emoji;
-                }).ToImmutableArray();
+                });
 
             if (model.Features.HasValue)
                 Features = model.Features.Value.ToImmutableArray();

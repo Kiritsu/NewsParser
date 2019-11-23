@@ -8,18 +8,18 @@ namespace Disqord.WebSocket
     {
         public ReadOnlyMemory<byte> Message { get; }
 
-        public CancellationToken Token { get; }
+        public CancellationToken CancellationToken { get; }
 
         private readonly TaskCompletionSource<bool> _tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        public WebSocketRequest(ReadOnlyMemory<byte> message, CancellationToken cancellationToken)
+        internal WebSocketRequest(ReadOnlyMemory<byte> message, CancellationToken cancellationToken)
         {
             Message = message;
-            Token = cancellationToken;
+            CancellationToken = cancellationToken;
         }
 
-        public async Task WaitAsync()
-            => await _tcs.Task.ConfigureAwait(false);
+        internal Task WaitAsync()
+            => _tcs.Task;
 
         public void SetComplete()
             => _tcs.SetResult(true);

@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Threading.Tasks;
 using Disqord.Models;
 using Qommon.Collections;
 
@@ -18,27 +16,24 @@ namespace Disqord.Rest
 
         public abstract string Content { get; }
 
-        public DateTimeOffset Timestamp { get; }
-
-        public IReadOnlyList<RestUser> UserMentions { get; private set; }
+        public IReadOnlyList<RestUser> MentionedUsers { get; private set; }
 
         public IReadOnlyDictionary<IEmoji, ReactionData> Reactions { get; private set; }
 
         IUser IMessage.Author => Author;
-        IReadOnlyList<IUser> IMessage.UserMentions => UserMentions;
+        IReadOnlyList<IUser> IMessage.MentionedUsers => MentionedUsers;
 
         internal RestMessage(RestDiscordClient client, MessageModel model) : base(client, model.Id)
         {
             ChannelId = model.ChannelId;
             GuildId = model.GuildId;
             Author = new RestUser(client, model.Author.Value);
-            Timestamp = model.Timestamp.Value;
         }
 
         internal virtual void Update(MessageModel model)
         {
             if (model.Mentions.HasValue)
-                UserMentions = model.Mentions.Value.Select(x => new RestUser(Client, x)).ToImmutableArray();
+                MentionedUsers = model.Mentions.Value.Select(x => new RestUser(Client, x)).ToImmutableArray();
 
             if (model.Reactions.HasValue)
                 Reactions = model.Reactions.HasValue && model.Reactions.Value != null

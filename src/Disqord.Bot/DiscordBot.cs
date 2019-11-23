@@ -33,13 +33,14 @@ namespace Disqord.Bot
             _provider = configuration.ProviderFactory?.Invoke(this);
             Prefixes = configuration.Prefixes?.ToImmutableArray() ?? ImmutableArray<string>.Empty;
             HasMentionPrefix = configuration.HasMentionPrefix;
+            AddTypeParser(CachedRoleParser.Instance);
             AddTypeParser(CachedMemberParser.Instance);
             AddTypeParser(CachedUserParser.Instance);
             AddTypeParser(CachedGuildChannelParser<CachedGuildChannel>.Instance);
             AddTypeParser(CachedGuildChannelParser<CachedTextChannel>.Instance);
             AddTypeParser(CachedGuildChannelParser<CachedVoiceChannel>.Instance);
             AddTypeParser(CachedGuildChannelParser<CachedCategoryChannel>.Instance);
-            //AddTypeParser(LocalEmojiParser.Instance);
+            AddTypeParser(LocalCustomEmojiParser.Instance);
             AddTypeParser(SnowflakeParser.Instance);
             AddTypeParser(ColorParser.Instance);
             //AddTypeParser(SanitaryContentParser.Instance);
@@ -127,25 +128,19 @@ namespace Disqord.Bot
             return _provider?.GetService(serviceType);
         }
 
-        /// <exception cref="TaskCanceledException"></exception>
-        public async Task RunAsync(CancellationToken token = default)
-        {
-            await ConnectAsync().ConfigureAwait(false);
-            await Task.Delay(-1, token).ConfigureAwait(false);
-        }
 
         /// <exception cref="TaskCanceledException"></exception>
-        public void Run(CancellationToken token = default)
-            => RunAsync(token).GetAwaiter().GetResult();
+        public void Run(CancellationToken cancellationToken = default)
+            => RunAsync(cancellationToken).GetAwaiter().GetResult();
 
         internal new void Log(LogMessageSeverity severity, string message, Exception exception = null)
             => Logger.Log(this, new MessageLoggedEventArgs("Bot", severity, message, exception));
 
-        public override void Dispose()
+        public override ValueTask DisposeAsync()
         {
             MessageReceived -= MessageReceivedAsync;
             (_provider as IDisposable)?.Dispose();
-            base.Dispose();
+            return base.DisposeAsync();
         }
     }
 }

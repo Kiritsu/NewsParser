@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Disqord.Collections
 {
-    internal readonly struct ReadOnlyOfTypeDictionary<TKey, TOriginal, TNew> : IReadOnlyDictionary<TKey, TNew> where TNew : class, TOriginal
+    internal sealed class ReadOnlyOfTypeDictionary<TKey, TOriginal, TNew> : IReadOnlyDictionary<TKey, TNew> where TNew : class, TOriginal
     {
         public IEnumerable<TKey> Keys => new ReadOnlyPredicateCollection<TKey>(_dictionary.Keys, ContainsKey);
 
@@ -43,7 +43,7 @@ namespace Disqord.Collections
             foreach (var kvp in _dictionary)
             {
                 if (kvp.Value is TNew newValue)
-                    yield return new KeyValuePair<TKey, TNew>(kvp.Key, newValue);
+                    yield return KeyValuePair.Create(kvp.Key, newValue);
             }
         }
 
