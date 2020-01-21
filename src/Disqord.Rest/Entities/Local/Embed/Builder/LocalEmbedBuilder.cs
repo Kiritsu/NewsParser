@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace Disqord
 {
@@ -14,7 +15,7 @@ namespace Disqord
 
         public const int MAX_DESCRIPTION_LENGTH = 2048;
 
-        public const int MAX_TOTAL_LENGTH = 6000;
+        public const int MAX_LENGTH = 6000;
 
         public string Title
         {
@@ -58,12 +59,25 @@ namespace Disqord
 
         public LocalEmbedFieldBuilderCollection Fields { get; }
 
+        public int Length
+        {
+            get
+            {
+                var titleLength = _title?.Length ?? 0;
+                var descriptionLength = _description?.Length ?? 0;
+                var footerLength = Footer?.Length ?? 0;
+                var authorLength = Author?.Length ?? 0;
+                var fieldsLength = Fields.Sum(x => x.Length);
+                return titleLength + descriptionLength + footerLength + authorLength + fieldsLength;
+            }
+        }
+
         public LocalEmbedBuilder()
         {
             Fields = new LocalEmbedFieldBuilderCollection();
         }
 
-        internal LocalEmbedBuilder(LocalEmbedBuilder builder) : this()
+        internal LocalEmbedBuilder(LocalEmbedBuilder builder)
         {
             _title = builder.Title;
             _description = builder.Description;
@@ -75,8 +89,7 @@ namespace Disqord
             Footer = builder.Footer?.Clone();
             Author = builder.Author?.Clone();
 
-            for (var i = 0; i < Fields.Count; i++)
-                Fields.Add(Fields[i].Clone());
+            Fields = new LocalEmbedFieldBuilderCollection(builder.Fields.Select(x => x.Clone()));
         }
 
         public LocalEmbedBuilder WithTitle(string title)
@@ -228,6 +241,9 @@ namespace Disqord
             return this;
         }
 
+        public LocalEmbedBuilder AddBlankField(bool isInline = false)
+            => AddField("\u200b", "\u200b", isInline);
+
         /// <summary>
         ///     Creates a deep copy of this <see cref="LocalEmbedBuilder"/>.
         /// </summary>
@@ -270,9 +286,8 @@ namespace Disqord
 
         public LocalEmbed Build()
         {
-            // TODO
-            //if (TotalLength > MAX_TOTAL_LENGTH)
-            //    throw new InvalidOperationException($"The total length of an embed must not exceed {MAX_TOTAL_LENGTH} characters.");
+            if (Length > MAX_LENGTH)
+                throw new InvalidOperationException($"The length of an embed must not exceed {MAX_LENGTH} characters.");
 
             return new LocalEmbed(this);
         }

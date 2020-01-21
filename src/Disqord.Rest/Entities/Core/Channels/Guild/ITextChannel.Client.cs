@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using Disqord.Rest;
 
@@ -9,7 +10,7 @@ namespace Disqord
     {
         Task ModifyAsync(Action<ModifyTextChannelProperties> action, RestRequestOptions options = null);
 
-        Task<RestWebhook> CreateWebhookAsync(string name, LocalAttachment avatar = null, RestRequestOptions options = null);
+        Task<RestWebhook> CreateWebhookAsync(string name, Stream avatar = null, RestRequestOptions options = null);
 
         Task<IReadOnlyList<RestWebhook>> GetWebhooksAsync(RestRequestOptions options = null);
 
@@ -19,6 +20,6 @@ namespace Disqord
 
         Task RemoveMemberReactionAsync(Snowflake messageId, Snowflake memberId, IEmoji emoji, RestRequestOptions options = null);
 
-        Task ClearReactionsAsync(Snowflake messageId, RestRequestOptions options = null);
+        Task ClearReactionsAsync(Snowflake messageId, IEmoji emoji = null, RestRequestOptions options = null);
     }
 }

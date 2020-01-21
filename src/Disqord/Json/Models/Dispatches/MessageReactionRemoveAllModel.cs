@@ -11,6 +11,6 @@ namespace Disqord.Models.Dispatches
         public ulong MessageId { get; set; }
 
         [JsonProperty("guild_id")]
-        public ulong? GuildId { get; set; }
+        public ulong GuildId { get; set; }
     }
 }

@@ -34,7 +34,7 @@ namespace Disqord.Serialization.Json.Newtonsoft
                     if (Library.Debug.DumpJson)
                     {
                         var jObject = JToken.Load(jsonReader);
-                        Console.WriteLine(jObject);
+                        Library.Debug.DumpWriter.WriteLine(jObject);
                         return jObject.ToObject<T>(_serializer);
                     }
                     else
@@ -59,7 +59,7 @@ namespace Disqord.Serialization.Json.Newtonsoft
                     var token = await JToken.LoadAsync(jsonReader).ConfigureAwait(false);
 
                     if (Library.Debug.DumpJson)
-                        Console.WriteLine(token);
+                        Library.Debug.DumpWriter.WriteLine(token);
 
                     return token.ToObject<T>(_serializer);
                 }
@@ -94,7 +94,7 @@ namespace Disqord.Serialization.Json.Newtonsoft
 
                     jsonWriter.Flush();
                     memoryStream.TryGetBuffer(out var streamBuffer);
-                    return streamBuffer.AsMemory(0, (int) memoryStream.Length);
+                    return streamBuffer.AsMemory();
                 }
             }
             catch (Exception ex)
@@ -112,11 +112,11 @@ namespace Disqord.Serialization.Json.Newtonsoft
 
                 if (value is T tValue)
                     return tValue;
-
+                
                 var jObject = value as JToken ?? JToken.FromObject(value, _serializer);
 
                 if (Library.Debug.DumpJson)
-                    Console.WriteLine(jObject);
+                    Library.Debug.DumpWriter.WriteLine(jObject);
 
                 return jObject.ToObject<T>(_serializer);
             }

@@ -2,9 +2,14 @@
 
 namespace Disqord
 {
+    /// <summary>
+    ///     Describes what the activity includes.
+    /// </summary>
     [Flags]
     public enum ActivityFlags
     {
+        None        = 0,
+
         Instance    = 0b000001,
 
         Join        = 0b000010,

@@ -42,6 +42,16 @@ namespace Disqord
 
         public bool IsInline { get; set; }
 
+        public int Length
+        {
+            get
+            {
+                var nameLength = _name?.Length ?? 0;
+                var valueLength = _value?.Length ?? 0;
+                return nameLength + valueLength;
+            }
+        }
+
         public LocalEmbedFieldBuilder()
         { }
 
@@ -58,6 +68,9 @@ namespace Disqord
             return this;
         }
 
+        public LocalEmbedFieldBuilder WithBlankName()
+            => WithName("\u200b");
+
         public LocalEmbedFieldBuilder WithValue(string value)
         {
             Value = value;
@@ -69,6 +82,9 @@ namespace Disqord
             Value = value?.ToString();
             return this;
         }
+
+        public LocalEmbedFieldBuilder WithBlankValue()
+            => WithValue("\u200b");
 
         public LocalEmbedFieldBuilder WithIsInline(bool isInline)
         {

@@ -1,4 +1,5 @@
-﻿using Disqord.Rest;
+﻿using System.Threading.Tasks;
+using Disqord.Rest;
 
 namespace Disqord
 {
@@ -16,10 +17,21 @@ namespace Disqord
             var shards = configuration.ShardId != null && configuration.ShardCount != null
                 ? ((int, int)?) (configuration.ShardId, configuration.ShardCount)
                 : null;
-            _gateway = new DiscordClientGateway(this, shards);
-            State._getGateway = (client, _) => (client as DiscordClient)._gateway;
-            SetStatus(configuration.Status);
-            SetActivity(configuration.Activity);
+            _gateway = new DiscordClientGateway(State, shards);
+            _gateway.SetStatus(configuration.Status);
+            _gateway.SetActivity(configuration.Activity);
+            _getGateway = (client, _) => (client as DiscordClient)._gateway;
+        }
+
+        // TODO
+        public override ValueTask DisposeAsync()
+        {
+            if (IsDisposed)
+                return default;
+
+            IsDisposed = true;
+            _gateway.Dispose();
+            return base.DisposeAsync();
         }
     }
 }

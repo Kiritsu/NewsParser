@@ -50,6 +50,7 @@ namespace Disqord
             {
                 case GatewayDispatch.Ready:
                 {
+                    _identifyTcs.TrySetResult(true);
                     Log(LogMessageSeverity.Information, "Successfully identified.");
                     var model = Serializer.ToObject<ReadyModel>(payload.D);
                     _sessionId = model.SessionId;
@@ -59,18 +60,17 @@ namespace Disqord
                     {
                         await State.HandleReadyAsync(model).ConfigureAwait(false);
                     }
-                    catch (Exception ex)
+                    finally
                     {
-                        Log(LogMessageSeverity.Critical, "An exception occurred while handling ready.", ex);
+                        _readyTaskCompletionSource = new TaskCompletionSource<bool>();
+                        _ = DelayedInvokeReadyAsync();
                     }
-
-                    _readyTaskCompletionSource = new TaskCompletionSource<bool>();
-                    _ = DelayedInvokeReadyAsync();
                     break;
                 }
 
                 case GatewayDispatch.Resumed:
                 {
+                    _identifyTcs.TrySetResult(true);
                     Log(LogMessageSeverity.Information, "Resumed.");
                     _resuming = false;
                     break;
@@ -192,6 +192,18 @@ namespace Disqord
                     return;
                 }
 
+                case GatewayDispatch.InviteCreate:
+                {
+                    await State.HandleInviteCreateAsync(payload).ConfigureAwait(false);
+                    return;
+                }
+
+                case GatewayDispatch.InviteDelete:
+                {
+                    await State.HandleInviteDeleteAsync(payload).ConfigureAwait(false);
+                    return;
+                }
+
                 case GatewayDispatch.MessageAck:
                 {
                     await State.HandleMessageAckAsync(payload).ConfigureAwait(false);
@@ -237,6 +249,12 @@ namespace Disqord
                 case GatewayDispatch.MessageReactionRemoveAll:
                 {
                     await State.HandleMessageReactionRemoveAllAsync(payload).ConfigureAwait(false);
+                    return;
+                }
+
+                case GatewayDispatch.MessageReactionRemoveEmoji:
+                {
+                    await State.HandleMessageReactionRemoveEmojiAsync(payload).ConfigureAwait(false);
                     return;
                 }
 
@@ -296,7 +314,7 @@ namespace Disqord
 
                 case GatewayDispatch.WebhooksUpdate:
                 {
-                    // TODO
+                    await State.HandleWebhooksUpdateAsync(payload).ConfigureAwait(false);
                     return;
                 }
 

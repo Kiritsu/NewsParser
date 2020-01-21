@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
-using Disqord.Rest;
 
-namespace Disqord
+namespace Disqord.Rest
 {
     public partial interface IRestDiscordClient : IDisposable
     {
-        Task<RestWebhook> CreateWebhookAsync(Snowflake channelId, string name, LocalAttachment avatar = null, RestRequestOptions options = null);
+        Task<RestWebhook> CreateWebhookAsync(Snowflake channelId, string name, Stream avatar = null, RestRequestOptions options = null);
 
         Task<IReadOnlyList<RestWebhook>> GetChannelWebhooksAsync(Snowflake channelId, RestRequestOptions options = null);
 

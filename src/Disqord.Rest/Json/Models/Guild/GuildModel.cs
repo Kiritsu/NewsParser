@@ -16,14 +16,17 @@ namespace Disqord.Models
         [JsonProperty("splash")]
         public Optional<string> Splash { get; set; }
 
+        [JsonProperty("discovery_splash")]
+        public Optional<string> DiscoverySplash { get; set; }
+
         [JsonProperty("owner")]
-        public Optional<bool?> Owner { get; set; }
+        public Optional<bool> Owner { get; set; }
 
         [JsonProperty("owner_id")]
         public Optional<ulong> OwnerId { get; set; }
 
         [JsonProperty("permissions")]
-        public Optional<ulong?> Permissions { get; set; }
+        public Optional<ulong> Permissions { get; set; }
 
         [JsonProperty("region")]
         public Optional<string> Region { get; set; }

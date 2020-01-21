@@ -1,7 +1,9 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using Disqord.Rest;
+using Disqord.Rest.AuditLogs;
 
 namespace Disqord
 {
@@ -15,17 +17,17 @@ namespace Disqord
         public Task<IReadOnlyList<RestWebhook>> GetWebhooksAsync(RestRequestOptions options = null)
             => Client.GetGuildWebhooksAsync(Id, options);
 
-        //public RestRequestEnumerator<RestAuditLog> GetAuditLogsEnumerator(int limit = 100, Snowflake? userId = null, Snowflake? startFromId = null)
-        //    => Client.GetAuditLogsEnumerator(Id, limit, userId, startFromId);
+        public RestRequestEnumerable<RestAuditLog> GetAuditLogsEnumerable(int limit = 100, Snowflake? userId = null, Snowflake? startFromId = null)
+            => Client.GetAuditLogsEnumerable(Id, limit, userId, startFromId);
 
-        //public RestRequestEnumerator<T> GetAuditLogsEnumerator<T>(int limit = 100, Snowflake? userId = null, Snowflake? startFromId = null) where T : RestAuditLog
-        //    => Client.GetAuditLogsEnumerator<T>(Id, limit, userId, startFromId);
+        public RestRequestEnumerable<T> GetAuditLogsEnumerable<T>(int limit = 100, Snowflake? userId = null, Snowflake? startFromId = null) where T : RestAuditLog
+            => Client.GetAuditLogsEnumerable<T>(Id, limit, userId, startFromId);
 
-        //public Task<IReadOnlyList<RestAuditLog>> GetAuditLogsAsync(int limit = 100, Snowflake? userId = null, Snowflake? startFromId = null, RestRequestOptions options = null)
-        //    => Client.GetAuditLogsAsync(Id, limit, userId, startFromId, options);
+        public Task<IReadOnlyList<RestAuditLog>> GetAuditLogsAsync(int limit = 100, Snowflake? userId = null, Snowflake? startFromId = null, RestRequestOptions options = null)
+            => Client.GetAuditLogsAsync(Id, limit, userId, startFromId, options);
 
-        //public Task<IReadOnlyList<T>> GetAuditLogsAsync<T>(int limit = 100, Snowflake? userId = null, Snowflake? startFromId = null, RestRequestOptions options = null) where T : RestAuditLog
-        //    => Client.GetAuditLogsAsync<T>(Id, limit, userId, startFromId, options);
+        public Task<IReadOnlyList<T>> GetAuditLogsAsync<T>(int limit = 100, Snowflake? userId = null, Snowflake? startFromId = null, RestRequestOptions options = null) where T : RestAuditLog
+            => Client.GetAuditLogsAsync<T>(Id, limit, userId, startFromId, options);
 
         public async Task ModifyAsync(Action<ModifyGuildProperties> action, RestRequestOptions options = null)
         {
@@ -51,8 +53,8 @@ namespace Disqord
         public Task<RestMember> GetMemberAsync(Snowflake memberId, RestRequestOptions options = null)
             => Client.GetMemberAsync(Id, memberId, options);
 
-        public RestRequestEnumerator<RestMember> GetMembersEnumerator(int limit, Snowflake? startFromId = null)
-            => Client.GetMembersEnumerator(Id, limit, startFromId);
+        public RestRequestEnumerable<RestMember> GetMembersEnumerable(int limit, Snowflake? startFromId = null)
+            => Client.GetMembersEnumerable(Id, limit, startFromId);
 
         public Task<IReadOnlyList<RestMember>> GetMembersAsync(int limit = 1000, Snowflake? startFromId = null, RestRequestOptions options = null)
             => Client.GetMembersAsync(Id, limit, startFromId, options);
@@ -129,7 +131,7 @@ namespace Disqord
         public Task<RestGuildEmoji> GetEmojiAsync(Snowflake emojiId, RestRequestOptions options = null)
             => Client.GetGuildEmojiAsync(Id, emojiId, options);
 
-        public Task<RestGuildEmoji> CreateEmojiAsync(LocalAttachment image, string name = null, IEnumerable<Snowflake> roleIds = null, RestRequestOptions options = null)
+        public Task<RestGuildEmoji> CreateEmojiAsync(Stream image, string name, IEnumerable<Snowflake> roleIds = null, RestRequestOptions options = null)
             => Client.CreateGuildEmojiAsync(Id, image, name, roleIds, options);
 
         public Task<RestGuildEmoji> ModifyEmojiAsync(Snowflake emojiId, Action<ModifyGuildEmojiProperties> action, RestRequestOptions options = null)

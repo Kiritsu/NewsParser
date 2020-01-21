@@ -14,20 +14,27 @@ namespace Disqord
         {
             switch (payload.Op)
             {
-                case Opcode.Dispatch:
+                case GatewayOperationCode.Dispatch:
                 {
-                    await HandleDispatchAsync(payload).ConfigureAwait(false);
+                    try
+                    {
+                        await HandleDispatchAsync(payload).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log(LogMessageSeverity.Error, $"An exception occurred while handling a {payload.T} dispatch.\n{payload.D}", ex);
+                    }
                     break;
                 }
 
-                case Opcode.Heartbeat:
+                case GatewayOperationCode.Heartbeat:
                 {
                     Log(LogMessageSeverity.Debug, "Heartbeat requested. Sending...");
                     await SendHeartbeatAsync().ConfigureAwait(false);
                     break;
                 }
 
-                case Opcode.Reconnect:
+                case GatewayOperationCode.Reconnect:
                 {
                     Log(LogMessageSeverity.Information, "Reconnect requested, closing...");
                     try
@@ -40,7 +47,7 @@ namespace Disqord
                     break;
                 }
 
-                case Opcode.InvalidSession:
+                case GatewayOperationCode.InvalidSession:
                 {
                     Log(LogMessageSeverity.Warning, "Received invalid session...");
                     if (_resuming)
@@ -70,7 +77,7 @@ namespace Disqord
                     break;
                 }
 
-                case Opcode.Hello:
+                case GatewayOperationCode.Hello:
                 {
                     Log(LogMessageSeverity.Debug, "Received Hello...");
                     var data = Serializer.ToObject<HelloModel>(payload.D);
@@ -87,7 +94,7 @@ namespace Disqord
                     break;
                 }
 
-                case Opcode.HeartbeatAck:
+                case GatewayOperationCode.HeartbeatAck:
                 {
                     Log(LogMessageSeverity.Debug, "Acknowledged Heartbeat.");
                     _lastHeartbeatAck = DateTimeOffset.UtcNow;

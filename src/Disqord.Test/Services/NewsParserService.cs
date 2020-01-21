@@ -13,12 +13,12 @@ namespace NewsParser.Services
 {
     public sealed class NewsParserService
     {
-        private readonly DiscordBot _bot;
+        private readonly DiscordBotBase _bot;
 
         private readonly HttpClient _http;
         private readonly Dictionary<int, IDisposable> _intervals;
 
-        public NewsParserService(DiscordBot bot, HttpClient http)
+        public NewsParserService(DiscordBotBase bot, HttpClient http)
         {
             _bot = bot;
             _http = http;
@@ -117,7 +117,7 @@ namespace NewsParser.Services
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine("Parser br0ke but nvm lets retry");
+                    Console.WriteLine($"Parser br0ke but nvm lets retry. {e.Message} {e.StackTrace}");
                 }
             }));
         }

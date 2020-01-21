@@ -2,6 +2,9 @@
 
 namespace Disqord
 {
+    /// <summary>
+    ///     Represents a user's custom activity.
+    /// </summary>
     public sealed class CustomActivity : Activity
     {
         public string Text { get; }
@@ -15,5 +18,10 @@ namespace Disqord
             if (model.Emoji != null)
                 Emoji = model.Emoji.ToEmoji();
         }
+
+        public override string ToString()
+            => Emoji != null
+                ? $"{Emoji} {Text}"
+                : Text;
     }
 }

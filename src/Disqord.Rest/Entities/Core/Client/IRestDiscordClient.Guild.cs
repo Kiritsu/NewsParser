@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
-using Disqord.Rest;
 
-namespace Disqord
+namespace Disqord.Rest
 {
     public partial interface IRestDiscordClient : IDisposable
     {
-        Task<RestGuild> CreateGuildAsync(string name, string voiceRegionId = null, LocalAttachment icon = null, VerificationLevel verificationLevel = default,
+        Task<RestGuild> CreateGuildAsync(string name, string voiceRegionId = null, Stream icon = null, VerificationLevel verificationLevel = default,
             DefaultNotificationLevel defaultNotificationLevel = default, ContentFilterLevel contentFilterLevel = default,
             RestRequestOptions options = null);
 
@@ -29,7 +29,7 @@ namespace Disqord
 
         Task<RestMember> GetMemberAsync(Snowflake guildId, Snowflake memberId, RestRequestOptions options = null);
 
-        RestRequestEnumerator<RestMember> GetMembersEnumerator(Snowflake guildId, int limit, Snowflake? startFromId = null);
+        RestRequestEnumerable<RestMember> GetMembersEnumerable(Snowflake guildId, int limit, Snowflake? startFromId = null);
 
         Task<IReadOnlyList<RestMember>> GetMembersAsync(Snowflake guildId, int limit = 1000, Snowflake? startFromId = null, RestRequestOptions options = null);
 

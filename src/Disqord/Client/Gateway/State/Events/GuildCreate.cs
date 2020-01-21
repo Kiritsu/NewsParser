@@ -20,15 +20,15 @@ namespace Disqord
 
             if (model.Unavailable.HasValue)
             {
-                Log(LogMessageSeverity.Information, $"Guild '{guild}' ({guild.Id}) became available.");
+                _client.GetGateway(model.Id).Log(LogMessageSeverity.Information, $"Guild '{guild}' ({guild.Id}) became available.");
                 return _client._guildAvailable.InvokeAsync(new GuildAvailableEventArgs(guild));
             }
             else
             {
                 if (guild.IsLarge)
-                    _ = _getGateway(_client, guild.Id).SendRequestOfflineMembersAsync(guild.Id);
+                    _ = _client.GetGateway(guild.Id).SendRequestOfflineMembersAsync(guild.Id);
 
-                Log(LogMessageSeverity.Information, $"Joined guild '{guild}' ({guild.Id}).");
+                _client.GetGateway(model.Id).Log(LogMessageSeverity.Information, $"Joined guild '{guild}' ({guild.Id}).");
                 return _client._joinedGuild.InvokeAsync(new JoinedGuildEventArgs(guild));
             }
         }

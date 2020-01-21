@@ -19,6 +19,8 @@ namespace Disqord
 
         public string SplashHash { get; private set; }
 
+        public string DiscoverySplashHash { get; private set; }
+
         public Snowflake OwnerId { get; private set; }
 
         public CachedMember Owner => GetMember(OwnerId);
@@ -89,13 +91,17 @@ namespace Disqord
 
         public IReadOnlyDictionary<Snowflake, CachedGuildChannel> Channels { get; }
 
-        public IReadOnlyDictionary<Snowflake, CachedNestedChannel> NestedChannels { get; }
+        public IReadOnlyDictionary<Snowflake, CachedNestedChannel> NestedChannels
+            => new ReadOnlyOfTypeDictionary<Snowflake, CachedGuildChannel, CachedNestedChannel>(_channels);
 
-        public IReadOnlyDictionary<Snowflake, CachedTextChannel> TextChannels { get; }
+        public IReadOnlyDictionary<Snowflake, CachedTextChannel> TextChannels
+            => new ReadOnlyOfTypeDictionary<Snowflake, CachedGuildChannel, CachedTextChannel>(_channels);
 
-        public IReadOnlyDictionary<Snowflake, CachedVoiceChannel> VoiceChannels { get; }
+        public IReadOnlyDictionary<Snowflake, CachedVoiceChannel> VoiceChannels
+            => new ReadOnlyOfTypeDictionary<Snowflake, CachedGuildChannel, CachedVoiceChannel>(_channels);
 
-        public IReadOnlyDictionary<Snowflake, CachedCategoryChannel> CategoryChannels { get; }
+        public IReadOnlyDictionary<Snowflake, CachedCategoryChannel> CategoryChannels
+            => new ReadOnlyOfTypeDictionary<Snowflake, CachedGuildChannel, CachedCategoryChannel>(_channels);
 
         public IReadOnlyDictionary<Snowflake, CachedMember> Members { get; }
 
@@ -166,10 +172,6 @@ namespace Disqord
             Emojis = new ReadOnlyDictionary<Snowflake, CachedGuildEmoji>(_emojis);
             Channels = new ReadOnlyDictionary<Snowflake, CachedGuildChannel>(_channels);
             Members = new ReadOnlyDictionary<Snowflake, CachedMember>(_members);
-            NestedChannels = new ReadOnlyOfTypeDictionary<Snowflake, CachedGuildChannel, CachedNestedChannel>(_channels);
-            TextChannels = new ReadOnlyOfTypeDictionary<Snowflake, CachedGuildChannel, CachedTextChannel>(_channels);
-            VoiceChannels = new ReadOnlyOfTypeDictionary<Snowflake, CachedGuildChannel, CachedVoiceChannel>(_channels);
-            CategoryChannels = new ReadOnlyOfTypeDictionary<Snowflake, CachedGuildChannel, CachedCategoryChannel>(_channels);
 
             Update(model);
             if (client.IsBot && IsLarge)
@@ -282,7 +284,8 @@ namespace Disqord
             for (var i = 0; i < models.Length; i++)
             {
                 var presenceModel = models[i];
-                _members[presenceModel.User.Id].Update(presenceModel);
+                if (_members.TryGetValue(presenceModel.User.Id, out var member))
+                    member.Update(presenceModel);
             }
         }
 
@@ -293,11 +296,13 @@ namespace Disqord
             for (var i = 0; i < model.Channels.Length; i++)
             {
                 var channelModel = model.Channels[i];
-                _channels.AddOrUpdate(channelModel.Id, _ => CachedGuildChannel.Create(this, channelModel), (_, old) =>
-                {
-                    old.Update(channelModel);
-                    return old;
-                });
+                _channels.AddOrUpdate(channelModel.Id,
+                    _ => CachedGuildChannel.Create(this, channelModel),
+                    (_, old) =>
+                    {
+                        old.Update(channelModel);
+                        return old;
+                    });
             }
 
             Update(model.Members);
@@ -326,6 +331,9 @@ namespace Disqord
 
             if (model.Splash.HasValue)
                 SplashHash = model.Splash.Value;
+
+            if (model.DiscoverySplash.HasValue)
+                DiscoverySplashHash = model.DiscoverySplash.Value;
 
             if (model.OwnerId.HasValue)
                 OwnerId = model.OwnerId.Value;
@@ -465,7 +473,13 @@ namespace Disqord
             => Discord.GetGuildIconUrl(Id, IconHash, format, size);
 
         public string GetSplashUrl(int size = 2048)
-            => Discord.GetGuildSplashUrl(Id, SplashHash, ImageFormat.Png, 2048);
+            => Discord.GetGuildSplashUrl(Id, SplashHash, ImageFormat.Png, size);
+
+        public string GetDiscoverySplashUrl(int size = 2048)
+            => Discord.GetGuildDiscoverySplashUrl(Id, SplashHash, ImageFormat.Png, size);
+
+        public string GetBannerUrl(int size = 2048)
+            => Discord.GetGuildBannerUrl(Id, SplashHash, ImageFormat.Png, size);
 
         public override string ToString()
             => Name;

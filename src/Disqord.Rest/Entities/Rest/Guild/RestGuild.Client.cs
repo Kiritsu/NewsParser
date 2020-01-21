@@ -1,6 +1,8 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
+using Disqord.Rest.AuditLogs;
 
 namespace Disqord.Rest
 {
@@ -20,17 +22,17 @@ namespace Disqord.Rest
             return webhooks;
         }
 
-        //public RestRequestEnumerator<RestAuditLog> GetAuditLogsEnumerator(int limit = 100, Snowflake? userId = null, Snowflake? startFromId = null)
-        //    => Client.GetAuditLogsEnumerator(Id, limit, userId, startFromId);
+        public RestRequestEnumerable<RestAuditLog> GetAuditLogsEnumerable(int limit = 100, Snowflake? userId = null, Snowflake? startFromId = null)
+            => Client.GetAuditLogsEnumerable(Id, limit, userId, startFromId);
 
-        //public RestRequestEnumerator<T> GetAuditLogsEnumerator<T>(int limit = 100, Snowflake? userId = null, Snowflake? startFromId = null) where T : RestAuditLog
-        //    => Client.GetAuditLogsEnumerator<T>(Id, limit, userId, startFromId);
+        public RestRequestEnumerable<T> GetAuditLogsEnumerable<T>(int limit = 100, Snowflake? userId = null, Snowflake? startFromId = null) where T : RestAuditLog
+            => Client.GetAuditLogsEnumerable<T>(Id, limit, userId, startFromId);
 
-        //public Task<IReadOnlyList<RestAuditLog>> GetAuditLogsAsync(int limit = 100, Snowflake? userId = null, Snowflake? startFromId = null, RestRequestOptions options = null)
-        //    => Client.GetAuditLogsAsync(Id, limit, userId, startFromId, options);
+        public Task<IReadOnlyList<RestAuditLog>> GetAuditLogsAsync(int limit = 100, Snowflake? userId = null, Snowflake? startFromId = null, RestRequestOptions options = null)
+            => Client.GetAuditLogsAsync(Id, limit, userId, startFromId, options);
 
-        //public Task<IReadOnlyList<T>> GetAuditLogsAsync<T>(int limit = 100, Snowflake? userId = null, Snowflake? startFromId = null, RestRequestOptions options = null) where T : RestAuditLog
-        //    => Client.GetAuditLogsAsync<T>(Id, limit, userId, startFromId, options);
+        public Task<IReadOnlyList<T>> GetAuditLogsAsync<T>(int limit = 100, Snowflake? userId = null, Snowflake? startFromId = null, RestRequestOptions options = null) where T : RestAuditLog
+            => Client.GetAuditLogsAsync<T>(Id, limit, userId, startFromId, options);
 
         public async Task ModifyAsync(Action<ModifyGuildProperties> action, RestRequestOptions options = null)
         {
@@ -66,8 +68,8 @@ namespace Disqord.Rest
             return member;
         }
 
-        public RestRequestEnumerator<RestMember> GetMembersEnumerator(int limit, Snowflake? startFromId = null)
-            => Client.GetMembersEnumerator(Id, limit, startFromId);
+        public RestRequestEnumerable<RestMember> GetMembersEnumerable(int limit, Snowflake? startFromId = null)
+            => Client.GetMembersEnumerable(Id, limit, startFromId);
 
         public async Task<IReadOnlyList<RestMember>> GetMembersAsync(int limit = 1000, Snowflake? startFromId = null, RestRequestOptions options = null)
         {
@@ -126,7 +128,7 @@ namespace Disqord.Rest
 
         public async Task<RestRole> CreateRoleAsync(Action<CreateRoleProperties> action = null, RestRequestOptions options = null)
         {
-            var role = await Client.CreateRoleAsync(Id, action, options);
+            var role = await Client.CreateRoleAsync(Id, action, options).ConfigureAwait(false);
             role.Guild.SetValue(this);
             return role;
         }
@@ -204,7 +206,7 @@ namespace Disqord.Rest
             return emoji;
         }
 
-        public async Task<RestGuildEmoji> CreateEmojiAsync(LocalAttachment image, string name = null, IEnumerable<Snowflake> roleIds = null, RestRequestOptions options = null)
+        public async Task<RestGuildEmoji> CreateEmojiAsync(Stream image, string name, IEnumerable<Snowflake> roleIds = null, RestRequestOptions options = null)
         {
             var emoji = await Client.CreateGuildEmojiAsync(Id, image, name, roleIds, options).ConfigureAwait(false);
             emoji.Guild.SetValue(this);

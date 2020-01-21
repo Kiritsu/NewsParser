@@ -72,6 +72,12 @@ namespace Disqord
         [EnumMember(Value = "GUILD_ROLE_DELETE")]
         GuildRoleDelete,
 
+        [EnumMember(Value = "INVITE_CREATE")]
+        InviteCreate,
+
+        [EnumMember(Value = "INVITE_DELETE")]
+        InviteDelete,
+
         [EnumMember(Value = "GUILD_SYNC")]
         GuildSync,
 
@@ -98,6 +104,9 @@ namespace Disqord
 
         [EnumMember(Value = "MESSAGE_REACTION_REMOVE_ALL")]
         MessageReactionRemoveAll,
+
+        [EnumMember(Value = "MESSAGE_REACTION_REMOVE_EMOJI")]
+        MessageReactionRemoveEmoji,
 
         [EnumMember(Value = "PRESENCE_UPDATE")]
         PresenceUpdate,

@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Threading.Tasks;
 using Disqord.Models;
 
 namespace Disqord
 {
-    public sealed class CachedGuildEmoji : CachedSnowflakeEntity, IGuildEmoji
+    public sealed partial class CachedGuildEmoji : CachedSnowflakeEntity, IGuildEmoji
     {
         public CachedGuild Guild { get; }
 
@@ -20,6 +18,8 @@ namespace Disqord
         public bool IsManaged { get; }
 
         public bool IsAnimated { get; }
+
+        public bool IsAvailable { get; private set; }
 
         public string ReactionFormat => Discord.ToReactionFormat(this);
 
@@ -43,33 +43,19 @@ namespace Disqord
         {
             Name = model.Name;
             RoleIds = model.Roles.Select(x => new Snowflake(x)).ToImmutableArray();
+            IsAvailable = model.Available;
         }
 
         public string GetUrl(int size = 2048)
             => Discord.GetCustomEmojiUrl(Id, IsAnimated, size);
 
         public bool Equals(IEmoji other)
-        {
-            if (other == null)
-                return false;
+            => Discord.Comparers.Emoji.Equals(this, other);
 
-            if (!(other is ICustomEmoji customEmoji))
-                return false;
+        public override bool Equals(object obj)
+            => obj is IEmoji emoji && Equals(emoji);
 
-            return Id.Equals(customEmoji.Id);
-        }
-
-        public Task DeleteAsync(RestRequestOptions options = null)
-            => Client.DeleteGuildEmojiAsync(Guild.Id, Id, options);
-
-        public async Task ModifyAsync(Action<ModifyGuildEmojiProperties> action, RestRequestOptions options = null)
-        {
-            if (action == null)
-                throw new ArgumentNullException(nameof(action));
-
-            var properties = new ModifyGuildEmojiProperties();
-            action(properties);
-            Update(await Client.RestClient.ApiClient.ModifyGuildEmojiAsync(Guild.Id, Id, properties, options).ConfigureAwait(false));
-        }
+        public override int GetHashCode()
+            => Discord.Comparers.Emoji.GetHashCode(this);
     }
 }

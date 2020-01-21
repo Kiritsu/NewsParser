@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Bot;
+using Disqord.Bot.Prefixes;
 using Disqord.Events;
 using Disqord.Logging;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,9 +23,9 @@ namespace NewsParser
         private async Task MainAsync()
         {
             var token = Environment.GetEnvironmentVariable("NOT_QUAHU");
-            using (var bot = new DiscordBot(TokenType.Bot, token, new DiscordBotConfiguration
+            var pfxPrvdr = new DefaultPrefixProvider().AddPrefix("k!");
+            using (var bot = new DiscordBot(TokenType.Bot, token, pfxPrvdr, new DiscordBotConfiguration
             {
-                Prefixes = new[] { "k!" },
                 ProviderFactory = bot => new ServiceCollection()
                     .AddSingleton(bot)
                     .AddSingleton<NewsParserService>()
@@ -144,7 +145,12 @@ namespace NewsParser
 
         private async Task Bot_Ready(ReadyEventArgs e)
         {
-            var newsParser = (e.Client as IServiceProvider).GetService<NewsParserService>();
+            if (!(e.Client is IServiceProvider service))
+            {
+                Console.WriteLine("SERVICE IS NULL DUMBASS");
+                return;
+            }
+            var newsParser = service.GetService<NewsParserService>();
             await newsParser.RunAsync();
         }
 

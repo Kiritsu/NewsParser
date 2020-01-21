@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Disqord.Collections;
-using Disqord.Logging;
 using Disqord.Models;
 using Disqord.Models.Dispatches;
 using Qommon.Collections;
@@ -21,7 +19,7 @@ namespace Disqord
 
         public string Nick { get; private set; }
 
-        public IReadOnlyDictionary<Snowflake, CachedRole> Roles { get; }
+        public RoleCollection Roles { get; private set; }
 
         public DateTimeOffset JoinedAt { get; }
 
@@ -75,17 +73,13 @@ namespace Disqord
             }
         }
 
-        private readonly LockedDictionary<Snowflake, CachedRole> _roles;
-
         internal override CachedSharedUser SharedUser { get; }
 
         Snowflake IMember.GuildId => Guild.Id;
-        IReadOnlyCollection<Snowflake> IMember.RoleIds => new ReadOnlyCollection<Snowflake>(_roles.Keys);
+        IReadOnlyCollection<Snowflake> IMember.RoleIds => new ReadOnlyCollection<Snowflake>(Roles.Keys as ICollection<Snowflake>);
 
         internal CachedMember(CachedSharedUser user, CachedGuild guild, MemberModel model) : base(user)
         {
-            _roles = new LockedDictionary<Snowflake, CachedRole>(model.Roles.Value.Length);
-            Roles = new ReadOnlyDictionary<Snowflake, CachedRole>(_roles);
             SharedUser = user;
             Guild = guild;
             JoinedAt = model.JoinedAt;
@@ -100,18 +94,10 @@ namespace Disqord
 
         internal void Update(ulong[] roles)
         {
-            _roles.Clear();
-            _roles[Guild.Id] = Guild.Roles[Guild.Id];
-            for (var i = 0; i < roles.Length; i++)
-            {
-                var roleId = roles[i];
-                if (!Guild.Roles.TryGetValue(roleId, out var role))
-                {
-                    Client.Log(LogMessageSeverity.Warning, $"Guild has no role the member has. Id: {roleId} {Guild.Name}.");
-                    continue;
-                }
-                _roles[roleId] = role;
-            }
+            if (Roles == null)
+                Roles = new RoleCollection(Guild, roles);
+            else
+                Roles.Update(roles);
         }
 
         internal void Update(MemberModel model)

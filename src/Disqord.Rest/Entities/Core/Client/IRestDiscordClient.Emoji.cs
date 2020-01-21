@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
-using Disqord.Rest;
 
-namespace Disqord
+namespace Disqord.Rest
 {
     public partial interface IRestDiscordClient : IDisposable
     {
@@ -11,7 +11,7 @@ namespace Disqord
 
         Task<RestGuildEmoji> GetGuildEmojiAsync(Snowflake guildId, Snowflake emojiId, RestRequestOptions options = null);
 
-        Task<RestGuildEmoji> CreateGuildEmojiAsync(Snowflake guildId, LocalAttachment image, string name = null, IEnumerable<Snowflake> roleIds = null, RestRequestOptions options = null);
+        Task<RestGuildEmoji> CreateGuildEmojiAsync(Snowflake guildId, Stream image, string name, IEnumerable<Snowflake> roleIds = null, RestRequestOptions options = null);
 
         Task<RestGuildEmoji> ModifyGuildEmojiAsync(Snowflake guildId, Snowflake emojiId, Action<ModifyGuildEmojiProperties> action, RestRequestOptions options = null);
 
