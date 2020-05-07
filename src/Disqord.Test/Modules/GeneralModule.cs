@@ -1,9 +1,11 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Xml;
 using Disqord;
 using Disqord.Bot;
+using HtmlAgilityPack;
 using LiteDB;
 using NewsParser.Services;
 using Qmmands;
@@ -22,6 +24,42 @@ namespace NewsParser
         {
             _newsParser = newsParser;
             _http = http;
+        }
+
+        [Command("getlastpost")]
+        public async Task GetPosts(string url)
+        {
+            try
+            {
+                var html = new HtmlWeb();
+                var content = html.Load(url);
+                
+                var nodes = content.DocumentNode.SelectNodes("//div[@class='messageText']");
+
+                if (nodes is null)
+                {
+                    Console.WriteLine("Current node doesn't have `//div[@class='messageText']`");
+                    return;
+                }
+                
+                await ReplyAsync(nodes.Last().InnerText);
+            }
+            catch (Exception e)
+            {
+                await ReplyAsync(e.Message);
+                await ReplyAsync(e.StackTrace);
+            }
+        }
+
+        [Command("stats")]
+        public async Task StatsAsync()
+        {
+            var str = "```" + string.Join("\n", Context.Guild.Roles.Values.Where(x => !x.IsManaged && !x.IsDefault && !x.Color.HasValue).OrderByDescending(x => x.Members.Count).Select(x => $"- {x.Name}: {x.Members.Count} members")) +
+                $"\n\nTotal members: {Context.Guild.Members.Count} ({Context.Guild.Members.Values.Count(x => x.Roles.Count == 1)} members don't have any role)" +
+                $"\nChannels: {Context.Guild.Channels.Count} ({Context.Guild.TextChannels.Count} text channels, {Context.Guild.CategoryChannels.Count} categories)" +
+                "```";
+            
+            await ReplyAsync(str, mentions: LocalMentions.None);
         }
 
         [Command("ping")]

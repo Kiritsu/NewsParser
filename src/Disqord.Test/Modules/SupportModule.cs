@@ -132,7 +132,7 @@ namespace NewsParser.Modules
 
         [Command("Support")]
         [DmOnly]
-        [Cooldown(1, 1, CooldownMeasure.Minutes, CooldownBucketType.User)]
+        [Cooldown(1, 5, CooldownMeasure.Minutes, CooldownBucketType.User)]
         public async Task SupportAsync(int id, [Remainder] string details)
         {
             using var db = new LiteDatabase("support.db");
@@ -179,7 +179,7 @@ namespace NewsParser.Modules
         }
 
         [Command("Support")]
-        [Cooldown(1, 1, CooldownMeasure.Minutes, CooldownBucketType.User)]
+        [Cooldown(1, 5, CooldownMeasure.Minutes, CooldownBucketType.User)]
         public async Task SupportAsync()
         {
             using var db = new LiteDatabase("support.db");

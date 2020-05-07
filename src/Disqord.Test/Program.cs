@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -7,6 +8,7 @@ using Disqord.Bot;
 using Disqord.Bot.Prefixes;
 using Disqord.Events;
 using Disqord.Logging;
+using Disqord.Rest.AuditLogs;
 using Microsoft.Extensions.DependencyInjection;
 using NewsParser.Services;
 using Qmmands;
@@ -31,11 +33,11 @@ namespace NewsParser
                     .AddSingleton<NewsParserService>()
                     .AddSingleton<HttpClient>()
                     .BuildServiceProvider(),
-                CommandService = new CommandService(new CommandServiceConfiguration
+                CommandServiceConfiguration = new CommandServiceConfiguration
                 {
                     CooldownBucketKeyGenerator = GenerateBucketKey,
                     IgnoresExtraArguments = true
-                })
+                }
             }))
             {
                 bot.Ready += Bot_Ready;
@@ -107,11 +109,33 @@ namespace NewsParser
                 .AddField("Author", $"{e.Message.Value.Author.Name}#{e.Message.Value.Author.Discriminator}", true)
                 .AddField("Date", $"{e.Message.Value.Id.CreatedAt:G}", true)
                 .AddField("Channel", $"{(e.Channel as IMentionable).Mention}", true)
-                .AddField("Content", $"{e.Message.Value.Content}")
-                .Build();
+                .AddField("Content", $"{e.Message.Value.Content}");
 
             var tc = e.Client.GetChannel(636992310265118752) as CachedTextChannel;
-            await tc.SendMessageAsync(embed: embed);
+            var msg = await tc.SendMessageAsync(embed: embed.Build());
+
+            try
+            {
+                var auditLogs = await gc.Guild.GetAuditLogsAsync<RestMessagesDeletedAuditLog>();
+                var auditLog = auditLogs.FirstOrDefault(x => x.ChannelId == gc.Id && x.TargetId == e.Message.Value.Author.Id);
+                if (!(auditLog is null))
+                {
+                    var usrResp = await auditLog.ResponsibleUser.GetAsync();
+
+                    if ((DateTimeOffset.UtcNow - auditLog.Id.CreatedAt) > TimeSpan.FromMinutes(5))
+                    {
+                        return;
+                    }
+
+                    embed.WithFooter($"Probably deleted by: {usrResp.Name}#{usrResp.Discriminator}");
+
+                    await msg.ModifyAsync(x => x.Embed = embed.Build());
+                }
+            }
+            catch (Exception)
+            {
+
+            }
         }
 
         private object GenerateBucketKey(object bucketType, CommandContext ctx)

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using Disqord;
 using Disqord.Bot;
+using HtmlAgilityPack;
 using LiteDB;
 
 namespace NewsParser.Services
@@ -49,7 +50,7 @@ namespace NewsParser.Services
 
         public void Start(RSSEntity entity)
         {
-            _intervals.Add(entity.Id, Observable.Interval(TimeSpan.FromMinutes(1)).Subscribe(async _ =>
+            _intervals.Add(entity.Id, Observable.Interval(TimeSpan.FromMinutes(3)).Subscribe(async _ =>
             {
                 try
                 {
@@ -97,12 +98,32 @@ namespace NewsParser.Services
                     var topicEntities = db.GetCollection<TopicEntity>("topics");
                     topicEntities.EnsureIndex(x => x.Id);
 
-                    if (topicEntities.FindAll().ToList().Any(x => x.Name == topic.Name && x.CreatedAt == topic.CreatedAt))
+                    if (topicEntities.FindAll().ToList().Any(
+                        x => x.Name == topic.Name && x.CreatedAt == topic.CreatedAt))
                     {
                         return;
                     }
 
                     topicEntities.Insert(topic);
+
+                    var html = new HtmlWeb();
+                    var content = html.Load(topic.Url);
+
+                    var nodes = content.DocumentNode.SelectNodes("//div[@class='messageText']");
+                    var contentNode = "";
+                    if (!(nodes is null))
+                    {
+                        var lastNode = nodes.Last();
+                        if (!(lastNode is null))
+                        {
+                            contentNode = lastNode.InnerText;
+                        }
+                    }
+
+                    if (contentNode.Length > 1700)
+                    {
+                        contentNode = contentNode.Substring(0, 1700) + "...";
+                    }
 
                     await (channel as ITextChannel).SendMessageAsync(
                         embed: new LocalEmbedBuilder()
@@ -110,14 +131,16 @@ namespace NewsParser.Services
                                             .WithName(topic.Name)
                                             .WithUrl(topic.Url))
                             .WithColor(Color.Aqua)
-                            .WithDescription($"A new thread has been created by `{topic.Author}`." +
+                            .WithDescription($"A new thread has been created by `{topic.Author}`:" +
+                                             (string.IsNullOrWhiteSpace(contentNode) ? "" : contentNode) +
                                              $"\n\n[Click here]({topic.Url}) to see the entire thread.")
                             .WithFooter($"Created on {topic.CreatedAt}")
                             .Build());
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine($"Parser br0ke but nvm lets retry. {e.Message} {e.StackTrace}");
+                    Console.WriteLine(
+                        $"{DateTimeOffset.Now:g} Parser br0ke (attempting to retry): {e.Message}\n{e.StackTrace}");
                 }
             }));
         }

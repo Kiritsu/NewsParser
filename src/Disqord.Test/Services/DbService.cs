@@ -2,6 +2,15 @@
 
 namespace NewsParser.Services
 {
+    public sealed class TagEntity
+    {
+        public int Id { get; set; }
+
+        public string TagName { get; set; }
+
+        public string TagContent { get; set; }
+    }
+
     public sealed class ReportEntity
     {
         /// <summary>
